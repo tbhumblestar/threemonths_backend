@@ -1,6 +1,6 @@
-from pathlib     import Path
-from my_settings import *
-from datetime    import timedelta
+from pathlib         import Path
+from secret_settings import *
+from datetime        import timedelta
 
 import pymysql
 pymysql.install_as_MySQLdb()
