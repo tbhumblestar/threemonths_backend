@@ -30,7 +30,7 @@ INSTALLED_APPS = [
     'core',
     'users',
     'products',
-    'forms',
+    'orders',
     
     #third
     'rest_framework',
