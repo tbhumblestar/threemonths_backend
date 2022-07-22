@@ -21,3 +21,17 @@ class ProductListView(generics.ListAPIView):
     serializer_class = ProductSerializer
     filter_backends  = [filters.DjangoFilterBackend]
     filterset_class  = ProductFilter
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["test"] = "test"
+        # context["query_params"] = self.request.query_params
+        return context
+
+
+    # serializer = self.get_serializer(data=request.data)
+    # serializer.context["customer_id"] = request.user.id
+    # serializer.context["query_params"] = request.query_params
+
+    # serializer.is_valid(raise_exception=True)
+    # ...
