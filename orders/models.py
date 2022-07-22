@@ -4,8 +4,6 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-# Create your models here.
-
 class Order(TimeStampedModel):
     order_type = (
         ('cafe','Cafe order'),
@@ -48,7 +46,8 @@ class OrderedProductsInPackage(TimeStampedModel):
     
     class Meta:
         db_table = 'ordered_products_in_packages'
-    
+
+
 class CafeOrder(TimeStampedModel):
     order               = models.ForeignKey('Order',on_delete=models.CASCADE)
     cafename            = models.CharField(max_length=50)
@@ -67,7 +66,8 @@ class CakeOrder(TimeStampedModel):
     
     class Meta:
         db_table = 'cake_orders'
-    
+
+
 class OrderedCake(TimeStampedModel):
     product = models.ForeignKey('products.Product',on_delete=models.CASCADE)
     count   = models.BigIntegerField()

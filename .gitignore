@@ -402,3 +402,4 @@ zsdoc/data
 
 secret_settings.py
 db_uploader.py
+/mediafile

@@ -13,8 +13,12 @@ class Product(models.Model):
     price                = models.PositiveIntegerField()
     description          = models.CharField(max_length=300,null=True,blank=True)
     optional_description = models.CharField(max_length=300,null=True,blank=True)
+    is_active            = models.BooleanField (default = True)
     signature            = models.BooleanField(default = False)
     sellout              = models.BooleanField(default=False)
+
+    def __str__(self):
+        return str(self.id) + " | " + self.product_name +  "|" + " 가격 : " + str(self.price)
 
     class Meta:
         db_table = 'products'
@@ -37,19 +41,27 @@ class ProductImage(models.Model):
         ('detail','detail')
     )
     
-    product   = models.ForeignKey("Product",on_delete=models.CASCADE)
-    image_url = models.CharField(max_length=250)
-    page      = models.CharField(max_length=50)
-    place     = models.CharField(max_length=50)
+    product     = models.ForeignKey("Product",on_delete=models.CASCADE)
+    img_src     = models.CharField(max_length=250)
+    page        = models.CharField(max_length=50)
+    place       = models.CharField(max_length=50)
+    description = models.CharField(max_length=100,null=True,blank=True)
+    
+    def __str__(self):
+        return self.product.product_name
     
     class Meta:
         db_table = 'product_images'
         
 
 class IndependentImage(models.Model):
-    image_url = models.CharField(max_length=250)
-    page      = models.CharField(max_length=50)
-    place     = models.CharField(max_length=50)
+    img_src     = models.CharField(max_length=250)
+    page        = models.CharField(max_length=50)
+    place       = models.CharField(max_length=50)
+    description = models.CharField(max_length=100,null=True,blank=True)
+    
+    def __str__(self):
+        return self.description
     
     class Meta:
         db_table = 'independent_images'
@@ -65,7 +77,7 @@ class Package(models.Model):
 class PackageImage(models.Model):
     
     package   = models.ForeignKey("Package",on_delete=models.CASCADE)
-    image_url = models.CharField(max_length=250)
+    img_src = models.CharField(max_length=250)
     page      = models.CharField(max_length=50)
     place     = models.CharField(max_length=50)
     
