@@ -40,7 +40,7 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
         
-    productimage_set = ProductImageSerializer(many=True,read_only=True)
+    product_images = ProductImageSerializer(many=True,read_only=True)
     
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
@@ -60,5 +60,5 @@ class ProductSerializer(serializers.ModelSerializer):
                 'price',
                 'description',
                 'optional_description',
-                'productimage_set',
+                'product_images',
                 ]

@@ -41,7 +41,7 @@ class ProductImage(models.Model):
         ('detail','detail')
     )
     
-    product     = models.ForeignKey("Product",on_delete=models.CASCADE)
+    product     = models.ForeignKey("Product",on_delete=models.CASCADE,related_name='product_images')
     img_src     = models.CharField(max_length=250)
     page        = models.CharField(max_length=50)
     place       = models.CharField(max_length=50)
