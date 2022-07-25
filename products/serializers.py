@@ -8,7 +8,6 @@ class IndependentImageSerializer(serializers.ModelSerializer):
         fields = ['img_src','description']
 
 
-
 #List serializer 데이터 하나하나에 적용됨
 #print("a")를 중간에 끼워넣으면 쿼리셋만큼 a가 출력됨
 class FilteredProductImageSerializer(serializers.ListSerializer):
@@ -18,10 +17,7 @@ class FilteredProductImageSerializer(serializers.ListSerializer):
         #참고) 다음과 같이 상위 시리얼라이저의 context에 접근도 가능하다
         # print("self.parent.context : ",self.parent.context)
         
-        
-        print("child_self.context : ",self.context)
-        img_filter = self.context['img_filter']
-        print(img_filter)
+        img_filter = self.child.context['img_filter']
         if self.context:
             data = data.filter(**img_filter)
         
@@ -43,31 +39,19 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    
-    # main_list_img_src = serializers.SerializerMethodField()
-    # def get_main_list_img_src(self,object):
-    #     return object.productimage_set.get(page='main',place='list').img_src
-    
+        
     productimage_set = ProductImageSerializer(many=True,read_only=True)
     
     def __init__(self,*args,**kwargs):
-        
-        self.additional_context = kwargs.pop('additional_context',{})
-        self.want_fields        = self.additional_context.get('want_fields',{})
-        self.img_filter         = self.additional_context.get('img_filter',{})
-            
         super().__init__(*args,**kwargs)
+        want_fields = self.context.get('want_fields')
         
-        print("self.context : ",self.context)
-        print("self.fields[productimage_set].context : ",self.fields['productimage_set'].context)
-        print("self.fields[productimage_set].context type :",type(self.fields['productimage_set'].context))
-        
-        
-        self.fields['productimage_set'].context.update({"img_filter":self.img_filter})
+        if want_fields:
+            allowed = set(want_fields)
+            existing = set(self.fields)
+            for field_name in existing-allowed:
+                self.fields.pop(field_name)
 
-        print("updated!")
-        
-        print("self.fields[productimage_set].context :",self.fields['productimage_set'].context)
                 
     class Meta:
         model = Product
@@ -77,11 +61,4 @@ class ProductSerializer(serializers.ModelSerializer):
                 'description',
                 'optional_description',
                 'productimage_set',
-                # 'main_list_img_src'
                 ]
-        
-        
-
-#동적 필터링
-#list serializer 커스터마이징(get_initial > to_representation)
-#Serializer Method Field
