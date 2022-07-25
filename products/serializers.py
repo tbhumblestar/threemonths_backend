@@ -15,10 +15,10 @@ class FilteredProductImageSerializer(serializers.ListSerializer):
     def to_representation(self, data,*args,**kwargs):
 
         #참고) 다음과 같이 상위 시리얼라이저의 context에 접근도 가능하다
-        # print("self.parent.context : ",self.parent.context)
-        
-        img_filter = self.child.context['img_filter']
-        if self.context:
+        print("self.parent.context : ",self.parent.context)
+        # print(self.parent.context)
+        img_filter = self.child.context.get('img_filter')
+        if img_filter:
             data = data.filter(**img_filter)
         
         #super은 하위클래스와 self를 인자로 받음. 그러나 생략해줘도 됨
