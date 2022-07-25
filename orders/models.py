@@ -1,3 +1,4 @@
+from turtle import title
 from django.db           import models
 from core.models         import TimeStampedModel
 from django.contrib.auth import get_user_model
@@ -19,10 +20,11 @@ class Order(TimeStampedModel):
     )
 
     user                   = models.ForeignKey(User,on_delete=models.PROTECT)
+    title                  = models.CharField(max_length=100)
     type                   = models.CharField(max_length=100, choices=order_type)
     customer_name          = models.CharField(max_length=50)
     contact                = models.CharField(max_length=50)
-    status                 = models.CharField(max_length=50, choices= status_type)
+    status                 = models.CharField(max_length=50, choices= status_type, default='not_confirmed')
     additional_explanation = models.CharField(max_length=300, null=True,blank=True)
     
     class Meta:
@@ -33,7 +35,7 @@ class PackageOrder(TimeStampedModel):
     order = models.ForeignKey('Order',on_delete=models.CASCADE)
     delivery_location = models.CharField(max_length=100)
     delivery_date = models.DateField()
-    is_packaging = models.BooleanField(default=True)
+    is_packaging = models.CharField(max_length=100, blank=True,null=True)
     
     class Meta:
         db_table = 'package_orders'
@@ -53,8 +55,7 @@ class CafeOrder(TimeStampedModel):
     cafename            = models.CharField(max_length=50)
     cafe_owner_name     = models.CharField(max_length=50)
     cafe_location       = models.CharField(max_length=50)
-    want_delivery_date  = models.DateField()
-    product_explanation = models.TextField()
+    product_explanation = models.TextField(blank=True,null=True)
     
     class Meta:
         db_table = 'cafe_orders'

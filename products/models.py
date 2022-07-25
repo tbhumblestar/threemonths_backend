@@ -13,8 +13,8 @@ class Product(models.Model):
     price                = models.PositiveIntegerField()
     description          = models.CharField(max_length=300,null=True,blank=True)
     optional_description = models.CharField(max_length=300,null=True,blank=True)
-    is_active            = models.BooleanField (default = True)
-    signature            = models.BooleanField(default = False)
+    is_active            = models.BooleanField(default=True)
+    tag                  = models.CharField(default=None,null=True,blank=True,max_length=50)
     sellout              = models.BooleanField(default=False)
 
     def __str__(self):
