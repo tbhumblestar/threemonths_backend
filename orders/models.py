@@ -19,7 +19,7 @@ class Order(TimeStampedModel):
         ('completed','completed')
     )
 
-    user                   = models.ForeignKey(User,on_delete=models.PROTECT)
+    user                   = models.ForeignKey(User,on_delete=models.CASCADE)
     title                  = models.CharField(max_length=100)
     type                   = models.CharField(max_length=100, choices=order_type)
     customer_name          = models.CharField(max_length=50)
@@ -32,10 +32,10 @@ class Order(TimeStampedModel):
         
 
 class PackageOrder(TimeStampedModel):
-    order = models.ForeignKey('Order',on_delete=models.CASCADE)
+    order             = models.OneToOneField('Order',on_delete=models.CASCADE)
     delivery_location = models.CharField(max_length=100)
-    delivery_date = models.DateField()
-    is_packaging = models.CharField(max_length=100, blank=True,null=True)
+    delivery_date     = models.DateField()
+    is_packaging      = models.CharField(max_length=100, blank=True,null=True)
     
     class Meta:
         db_table = 'package_orders'
@@ -51,18 +51,19 @@ class OrderedProductsInPackage(TimeStampedModel):
 
 
 class CafeOrder(TimeStampedModel):
-    order               = models.ForeignKey('Order',on_delete=models.CASCADE)
-    cafename            = models.CharField(max_length=50)
-    cafe_owner_name     = models.CharField(max_length=50)
-    cafe_location       = models.CharField(max_length=50)
-    product_explanation = models.TextField(blank=True,null=True)
+    order                      = models.OneToOneField('Order',on_delete=models.CASCADE)
+    cafename                   = models.CharField(max_length=50)
+    cafe_owner_name            = models.CharField(max_length=50)
+    corporate_registration_num = models.CharField(max_length=50)
+    cafe_location              = models.CharField(max_length=50)
+    product_explanation        = models.TextField(blank=True,null=True)
     
     class Meta:
         db_table = 'cafe_orders'
     
 
 class CakeOrder(TimeStampedModel):
-    order             = models.ForeignKey('Order',on_delete=models.CASCADE)
+    order             = models.OneToOneField('Order',on_delete=models.CASCADE)
     want_pick_up_date = models.DateField()
     
     class Meta:

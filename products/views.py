@@ -53,3 +53,7 @@ class ProductListView(generics.ListAPIView):
         context.update(additional_context)
         
         return context
+    
+class ProductDetailView(generics.ListAPIView):
+    queryset         = Product.objects.filter(is_active = True)
+    serializer_class = ProductSerializer

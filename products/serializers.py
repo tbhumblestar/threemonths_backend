@@ -32,8 +32,8 @@ class ProductImageSerializer(serializers.ModelSerializer):
         model = ProductImage
         fields ='__all__'
 
-        #list serializer를 커스터마이징 해주려면, 아예 다른 친구를 가져와야 함. 아래 설정철머 다른 serializer로 아예 바뀌어버리기 때문바뀌기 때문
-        #따라서 아래 설정된 list serializer가 아니라, 그냥 이 serializer를 아무리 커스터마이징해줘봤자, list가 아니라 그냥 instance를 받는 serializer를 커스터마이징해주는 것임
+        #list serializer를 커스터마이징 해주려면, 새로운 serializer를 생성해서 커스터마이징 해준 후 적용시켜야 함
+        #만약 그렇게 하지 않고 그냥 이 serializer를 아무리 커스터마이징해줘봤자, list가 아니라 그냥 instance를 받는 serializer를 커스터마이징해주는 것임
         list_serializer_class = FilteredProductImageSerializer
     
 
