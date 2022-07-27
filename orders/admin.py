@@ -4,7 +4,7 @@ from .models        import *
 admin.site.register(Order)
 
 admin.site.register(PackageOrder)
-admin.site.register(OrderedProductsInPackage)
+admin.site.register(OrderedProduct)
 
 admin.site.register(CafeOrder)
 

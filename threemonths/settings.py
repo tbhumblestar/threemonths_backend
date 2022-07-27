@@ -5,8 +5,12 @@ from datetime        import timedelta
 import pymysql
 pymysql.install_as_MySQLdb()
 
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
 
 SECRET_KEY = SECRET_KEY
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -161,3 +165,21 @@ SIMPLE_JWT = {
 
 AUTH_USER_MODEL = 'users.User'
 # AUTH_USER_MODEL = 'core.User'
+
+
+
+# #ENV 사용법
+# from environ import Env
+# env = Env()
+# env_path = BASE_DIR / ".env"
+# if env_path.exists():
+#     with env_path.open('rt',encoding='utf8') as f:
+#         env.read_env(f,overwrite=True)
+
+# EMAIL_HOST=env.str("EMAIL_HOST")
+# EMAIL_PORT=env.int("EMAIL_PORT")
+# EMAIL_USE_SSL=env.bool('EMAIL_USE_SSL')
+# EMAIL_HOST_USER=env.str('EMAIL_HOST_USER')
+# EMAIL_HOST_PASSWORD=env.str('EMAIL_HOST_PASSWORD')
+
+# DEFAULT_FORM_EMAIL = f"{EMAIL_HOST}@naver.com"

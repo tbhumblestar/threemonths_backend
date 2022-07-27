@@ -32,7 +32,7 @@ class Order(TimeStampedModel):
         
 
 class PackageOrder(TimeStampedModel):
-    order             = models.OneToOneField('Order',on_delete=models.CASCADE)
+    order             = models.OneToOneField('Order',on_delete=models.CASCADE,related_name='packageorders')
     delivery_location = models.CharField(max_length=100)
     delivery_date     = models.DateField()
     is_packaging      = models.CharField(max_length=100, blank=True,null=True)
@@ -41,17 +41,17 @@ class PackageOrder(TimeStampedModel):
         db_table = 'package_orders'
 
 
-class OrderedProductsInPackage(TimeStampedModel):
-    order_package = models.ForeignKey('PackageOrder',on_delete=models.CASCADE)
+class OrderedProduct(TimeStampedModel):
+    package_order = models.ForeignKey('PackageOrder',on_delete=models.CASCADE,related_name='orderedproducts')
     product       = models.ForeignKey('products.Product',on_delete=models.CASCADE)
     count         = models.BigIntegerField()
     
     class Meta:
-        db_table = 'ordered_products_in_packages'
+        db_table = 'ordered_products'
 
 
 class CafeOrder(TimeStampedModel):
-    order                      = models.OneToOneField('Order',on_delete=models.CASCADE)
+    order                      = models.OneToOneField('Order',on_delete=models.CASCADE,related_name='cafeorders')
     cafename                   = models.CharField(max_length=50)
     cafe_owner_name            = models.CharField(max_length=50)
     corporate_registration_num = models.CharField(max_length=50)
@@ -63,7 +63,7 @@ class CafeOrder(TimeStampedModel):
     
 
 class CakeOrder(TimeStampedModel):
-    order             = models.OneToOneField('Order',on_delete=models.CASCADE)
+    order             = models.OneToOneField('Order',on_delete=models.CASCADE,related_name='cakeorders')
     want_pick_up_date = models.DateField()
     
     class Meta:
@@ -71,6 +71,7 @@ class CakeOrder(TimeStampedModel):
 
 
 class OrderedCake(TimeStampedModel):
+    cake_order = models.ForeignKey('PackageOrder',on_delete=models.CASCADE,related_name='orderedcakes')
     product = models.ForeignKey('products.Product',on_delete=models.CASCADE)
     count   = models.BigIntegerField()
     
