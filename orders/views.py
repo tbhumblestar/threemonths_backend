@@ -19,7 +19,7 @@ serializer_by_type = {
     "package" : PackageOrderSerializer
 }
 
-detail_form_additional_context_key = {
+order_detail_context_dict = {
     "cake"    : 'orderedcakes',
     "package" : 'orderedproducts'
 }
@@ -54,23 +54,31 @@ class OrderListCreateView(generics.ListCreateAPIView):
         serializer = self.get_serializer(data=order_data,context=additional_context)
         serializer.is_valid(raise_exception=True)
         
-        detail_form_data = self.perform_create(serializer,)
+        detail_form_data = self.perform_create(serializer,type=[order_data['type']])
+        
         headers = self.get_success_headers(serializer.data)
         
         create_response_data = {
             'common_data' : serializer.data,
-            'detail' : detail_form_data
+            # 'detail' : detail_form_data
         }
         
-        return Response(create_response_data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
     
     def perform_create(self, serializer,**kwargs):
         user = self.request.user
         created_order = serializer.save(user = self.request.user)
-
+        
+        print(kwargs)
+        product_detail_info_field = order_detail_context_dict[kwargs.get('type')[0]]
+        additional_context = {
+            product_detail_info_field:self.request.data.pop(product_detail_info_field,None)
+        }
+        
+        print("additional_context : ",additional_context)
         print("self.request.data : ",self.request.data)
         
-        detail_serializer = serializer_by_type[created_order.type](data=self.request.data)
+        detail_serializer = serializer_by_type[created_order.type](data=self.request.data,context=additional_context)
         
                 
         detail_serializer.is_valid(raise_exception=True)
@@ -78,16 +86,3 @@ class OrderListCreateView(generics.ListCreateAPIView):
         
         detail_serializer.save(order = created_order)
         return detail_serializer.data
-    
-
-    
-    
-    # data = {
-    # 'album_name': 'The Grey Album',
-    # 'artist': 'Danger Mouse',
-    # 'tracks': [
-    #     {'order': 1, 'title': 'Public Service Announcement', 'duration': 245},
-    #     {'order': 2, 'title': 'What More Can I Say', 'duration': 264},
-    #     {'order': 3, 'title': 'Encore', 'duration': 159},
-    # ],
-# }

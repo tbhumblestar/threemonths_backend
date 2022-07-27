@@ -13,7 +13,7 @@ class OrderedProductSerializer(serializers.ModelSerializer):
         
 
 class PackageOrderSerializer(serializers.ModelSerializer):
-    orderedproducts = OrderedProductSerializer(many=True)
+    orderedproducts = OrderedProductSerializer(many=True,read_only=True)
     
     class Meta:
         model  = PackageOrder
@@ -24,10 +24,11 @@ class PackageOrderSerializer(serializers.ModelSerializer):
     
     def create(self,validated_data):
         print("validated_data : ",validated_data)
-        orderedproducts_data = validated_data.pop('orderedproducts')
         packageorder = PackageOrder.objects.create(**validated_data)
+        print("self.context : ",self.context)
         
-        for products_data in orderedproducts_data:
+        
+        for products_data in self.context.get('orderedproducts'):
             OrderedProduct.objects.create(package_order=packageorder,**products_data)
             
         return packageorder
