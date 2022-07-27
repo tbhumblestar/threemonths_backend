@@ -61,4 +61,5 @@ class ProductSerializer(serializers.ModelSerializer):
                 'description',
                 'optional_description',
                 'product_images',
+                'is_active'
                 ]
