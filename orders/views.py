@@ -12,7 +12,6 @@ from django_filters             import rest_framework as filters
 
 import re
 
-
 detail_serializer_by_type = {
     "cafe"    : CafeOrderSerializer,
     "cake"    : CakeOrderSerializer,
@@ -21,11 +20,11 @@ detail_serializer_by_type = {
 
 class OrderListCreateView(generics.ListCreateAPIView):
     # permission_classes = (IsAuthenticated, )
+    
     queryset         = Order.objects.all()
     serializer_class = OrderSerializer
     filter_backends  = [filters.DjangoFilterBackend]
     filterset_class  = OrderFilter
-    
     
     
     def create(self, request, *args, **kwargs):
@@ -44,7 +43,6 @@ class OrderListCreateView(generics.ListCreateAPIView):
             additional_context['want_fields'] = tuple(want_fields.split(','))
         
         
-        
         serializer = self.get_serializer(data=order_data,context=additional_context)
         serializer.is_valid(raise_exception=True)
         
@@ -57,24 +55,9 @@ class OrderListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer,**kwargs):
         user = self.request.user
         created_order = serializer.save(user = self.request.user)
-        
-        
-        
-
-        additional_context = {
-            "products_detail" : self.request.data.pop('products_detail',None)
-        }
-
-        
-        print("additional_context : ",additional_context)
-        print("self.request.data : ",self.request.data)
-        
+  
         detail_serializer = detail_serializer_by_type[created_order.type](data=self.request.data)
-        detail_serializer.context.update(additional_context)
-        
-                
         detail_serializer.is_valid(raise_exception=True)
-        print(detail_serializer.validated_data) 
         
         detail_serializer.save(order = created_order)
         return detail_serializer.data
