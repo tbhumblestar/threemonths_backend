@@ -65,15 +65,8 @@ class CafeOrder(TimeStampedModel):
 class CakeOrder(TimeStampedModel):
     order             = models.OneToOneField('Order',on_delete=models.CASCADE,related_name='cakeorders')
     want_pick_up_date = models.DateField()
+    product           = models.ForeignKey('products.Product',on_delete=models.CASCADE)
+    count             = models.BigIntegerField()
     
     class Meta:
         db_table = 'cake_orders'
-
-
-class OrderedCake(TimeStampedModel):
-    cake_order = models.ForeignKey('PackageOrder',on_delete=models.CASCADE,related_name='orderedcakes')
-    product = models.ForeignKey('products.Product',on_delete=models.CASCADE)
-    count   = models.BigIntegerField()
-    
-    class Meta:
-        db_table = 'ordered_cakes'

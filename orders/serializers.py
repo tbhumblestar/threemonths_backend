@@ -1,9 +1,11 @@
 from rest_framework import serializers
-from .models        import Order,PackageOrder,OrderedProduct, CafeOrder, CakeOrder, OrderedCake
+from .models        import Order,PackageOrder,OrderedProduct, CafeOrder, CakeOrder
 
+#PackageOrder
 class OrderedProductSerializer(serializers.ModelSerializer):
-    
+    # product_id = serializers.IntegerField(read_only=False)
     product_name = serializers.CharField(source='product.product_name',read_only=True)
+    
     
     class Meta:
         model  = OrderedProduct
@@ -11,7 +13,6 @@ class OrderedProductSerializer(serializers.ModelSerializer):
             "product_id","count","product_name"
         ]
         
-
 class PackageOrderSerializer(serializers.ModelSerializer):
     orderedproducts = OrderedProductSerializer(many=True,read_only=True)
     
@@ -23,36 +24,43 @@ class PackageOrderSerializer(serializers.ModelSerializer):
         ]     
     
     def create(self,validated_data):
-        print("validated_data : ",validated_data)
+        # print("validated_data : ",validated_data)
         packageorder = PackageOrder.objects.create(**validated_data)
-        print("self.context : ",self.context)
+        # print("self.context : ",self.context)
         
         
-        for products_data in self.context.get('orderedproducts'):
+        for products_data in self.context.get('products_detail'):
             OrderedProduct.objects.create(package_order=packageorder,**products_data)
             
         return packageorder
 
+
+#Cafe Order
 class CafeOrderSerializer(serializers.ModelSerializer):
     
     class Meta:
         model  = CafeOrder
-        fields = '__all__'
-        
-class OrderedCakeSerializer(serializers.ModelSerializer):
-    
-    class Meta:
-        model  = OrderedCake
-        fields = "__all__"
-        
+        fields = ['id','cafename','cafe_owner_name','corporate_registration_num','cafe_location']
+
+#Cake Order
 class CakeOrderSerializer(serializers.ModelSerializer):
-    orderedcakes = OrderedCakeSerializer(read_only=True,many=True)
     
     class Meta:
         model  = CakeOrder
         fields = [
-            "want_pick_up_date","orderedcakes"
-        ]
+            "id","want_pick_up_date","product_id","count"
+            ]
+
+    def create(self,validated_data):
+        print("validated_data : ",validated_data)
+        print("self.context : ",self.context)
+        products_detail = self.context.get('products_detail')
+        validated_data.update(products_detail)
+        cakeorder = CakeOrder.objects.create(**validated_data)
+        
+            
+        return cakeorder
+
 
 class OrderSerializer(serializers.ModelSerializer):
     packageorders = PackageOrderSerializer(read_only=True)
