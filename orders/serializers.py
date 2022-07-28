@@ -52,13 +52,6 @@ class CakeOrderSerializer(serializers.ModelSerializer):
             "id","product_id","product_name","want_pick_up_date","count"
             ]
 
-    def create(self,validated_data):
-        cakeorder = CakeOrder.objects.create(**validated_data)
-            
-        return cakeorder
-
-
-
 
 class OrderSerializer(serializers.ModelSerializer):
     """
@@ -86,17 +79,14 @@ class OrderSerializer(serializers.ModelSerializer):
             'packageorders','cafeorders','cakeorders'
         ]
         
-    #없는 필드 제거    
+    #없는 필드 제거. 굳이 list_serializer필드를 만들지 않아도 됨
     def to_representation(self, instance,*args,**kwargs):
         ret= super().to_representation(instance)
         
-        if ret['packageorders'] == None:
-            ret.pop('packageorders')
-            
-        if ret['cakeorders'] == None:
-            ret.pop('cakeorders')
-        
-        if ret['cafeorders'] == None:
-            ret.pop('cafeorders')
-            
+        type_set = set(['package','cake','cafe'])
+        order_type = set(ret['type'])
+
+        for order_type in type_set-order_type:
+            ret.pop(f"{order_type}orders")
+
         return ret

@@ -18,7 +18,7 @@ detail_serializer_by_type = {
     "package" : PackageOrderSerializer
 }
 
-class OrderListCreateView(generics.ListCreateAPIView):
+class OrderView(generics.ListCreateAPIView):
     # permission_classes = (IsAuthenticated, )
     
     queryset         = Order.objects.all()
@@ -61,3 +61,10 @@ class OrderListCreateView(generics.ListCreateAPIView):
         
         detail_serializer.save(order = created_order)
         return detail_serializer.data
+    
+class OrderDetailView(generics.RetrieveDestroyAPIView):
+    queryset         = Order.objects.all()
+    serializer_class = OrderSerializer
+    filter_backends  = [filters.DjangoFilterBackend]
+    lookup_url_kwarg = 'order_id'
+    lookup_field = 'id'
