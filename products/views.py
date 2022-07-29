@@ -48,6 +48,11 @@ class ProductListView(generics.ListAPIView):
             # }
             additional_context['img_filter'] = img_filter
         
+        #need_count
+        need_count     = self.request.query_params.get('need_count')
+        if need_count == "True":
+            additional_context["need_count"] = True
+        
         #context_update
         context = super().get_serializer_context()
         context.update(additional_context)

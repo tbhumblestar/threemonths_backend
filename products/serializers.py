@@ -63,3 +63,15 @@ class ProductSerializer(serializers.ModelSerializer):
                 'product_images',
                 'is_active'
                 ]
+    
+            
+    def to_representation(self, instance,*args,**kwargs):
+        """
+            for package_product_count
+        """
+        ret= super().to_representation(instance)
+        print(self.context)
+        if self.context.get('need_count'):
+            ret['count'] = 0
+
+        return ret
