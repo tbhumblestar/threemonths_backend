@@ -35,7 +35,8 @@ class PackageOrder(TimeStampedModel):
     order             = models.OneToOneField('Order',on_delete=models.CASCADE,related_name='packageorders')
     delivery_location = models.CharField(max_length=100)
     delivery_date     = models.DateField()
-    is_packaging      = models.CharField(max_length=100, blank=True,null=True)
+    is_packaging      = models.CharField(max_length=100,null=True,blank=True)
+    purpose           = models.CharField(max_length=200,null=True,blank=True)
     
     class Meta:
         db_table = 'package_orders'

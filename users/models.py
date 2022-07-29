@@ -48,14 +48,14 @@ class User(AbstractBaseUser,PermissionsMixin,TimeStampedModel):
     email                      = models.EmailField('email adress',unique=True,max_length=100)
     login_type                 = models.CharField('login_type',max_length=30,choices=login_type)
     nickname                   = models.CharField('nickname',max_length=30,null=True)
-    username                   = models.CharField('username',max_length=30,null=True)
-    contact_num                = models.CharField('contact_num',max_length=50,null=True)
-    location                   = models.CharField('location',max_length=50,null=True)
+    username                   = models.CharField('username',max_length=30,null=True,blank=True)
+    contact_num                = models.CharField('contact_num',max_length=50,null=True,blank=True)
+    location                   = models.CharField('location',max_length=50,null=True,blank=True)
     is_active                  = models.BooleanField('is_active',default=True)
     is_staff                   = models.BooleanField('is_staff',default=False)
-    profile_image_url          = models.CharField('profile_image_url',max_length=200,null=True)
-    profile_image_storage_path = models.CharField('profile_image_storage_path',max_length=200,null=True)
-    kakao_id                   = models.PositiveIntegerField('kakao_id',null=True)
+    profile_image_url          = models.CharField('profile_image_url',max_length=200,null=True,blank=True)
+    profile_image_storage_path = models.CharField('profile_image_storage_path',max_length=200,null=True,blank=True)
+    kakao_id                   = models.PositiveIntegerField('kakao_id',null=True,blank=True)
     
     EMAIL_FIELD                = "email"
     USERNAME_FIELD             = 'email'

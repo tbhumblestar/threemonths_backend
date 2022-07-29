@@ -5,7 +5,7 @@ from .models        import Order,PackageOrder,OrderedProduct, CafeOrder, CakeOrd
 class OrderedProductSerializer(serializers.ModelSerializer):
     #primary_key로 설정된 필드는 언제나 read_only=True임
     #따라서, read_only=False를 해주지 않으면,  is_valid()를 통한 유효성 검사과정에서 해당 필드가 아예 삭제되어, 해당 필드의 데이터도 사라져버림
-    product_id = serializers.IntegerField(read_only=False)
+    product_id   = serializers.IntegerField(read_only=False)
     product_name = serializers.CharField(source='product.product_name',read_only=True)
         
     class Meta:
@@ -25,23 +25,20 @@ class PackageOrderSerializer(serializers.ModelSerializer):
     
     def create(self,validated_data):
         orderedproducts = validated_data.pop('orderedproducts')
-        packageorder = PackageOrder.objects.create(**validated_data)
-        # print("self.context : ",self.context)
-        
+        packageorder = PackageOrder.objects.create(**validated_data)        
         
         for products_data in orderedproducts:
             OrderedProduct.objects.create(package_order=packageorder,**products_data)
         return packageorder
 
 
-#Cafe Order
 class CafeOrderSerializer(serializers.ModelSerializer):
     
     class Meta:
         model  = CafeOrder
         fields = ['id','cafename','cafe_owner_name','corporate_registration_num','cafe_location']
 
-#Cake Order
+
 class CakeOrderSerializer(serializers.ModelSerializer):
     product_id = serializers.IntegerField(read_only=False)
     product_name = serializers.CharField(source='product.product_name',read_only=True)
@@ -83,10 +80,13 @@ class OrderSerializer(serializers.ModelSerializer):
     def to_representation(self, instance,*args,**kwargs):
         ret= super().to_representation(instance)
         
+        #이건 안됨.. 왜?
+        #type_set = set(['package','cake','cafe']).remove(ret['type'])
+        
         type_set = set(['package','cake','cafe'])
-        order_type = set(ret['type'])
-
-        for order_type in type_set-order_type:
+        type_set.remove(ret['type'])
+        
+        for order_type in type_set:
             ret.pop(f"{order_type}orders")
 
         return ret
