@@ -45,7 +45,7 @@ class PackageOrder(TimeStampedModel):
 class OrderedProduct(TimeStampedModel):
     package_order = models.ForeignKey('PackageOrder',on_delete=models.CASCADE,related_name='orderedproducts')
     product       = models.ForeignKey('products.Product',on_delete=models.CASCADE)
-    count         = models.BigIntegerField()
+    buying        = models.BooleanField(default=False)
     
     class Meta:
         db_table = 'ordered_products'

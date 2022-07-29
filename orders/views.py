@@ -1,11 +1,3 @@
-from django.shortcuts import render
-from .models import Order, PackageOrder, OrderedProduct
-from .serializers import OrderSerializer, CafeOrderSerializer, CakeOrderSerializer, PackageOrderSerializer
-from core.filters import OrderFilter
-from core.permissions import ReviewUserOrIsStaffOrReadOnly
-# Create your views here.
-
-
 from django.shortcuts           import get_object_or_404
 from rest_framework             import generics
 from rest_framework.response    import Response
@@ -13,7 +5,11 @@ from rest_framework             import status
 from rest_framework.permissions import IsAuthenticated
 from django_filters             import rest_framework as filters
 
-import re
+from .models                    import Order, PackageOrder, OrderedProduct
+from .serializers               import OrderSerializer, CafeOrderSerializer, CakeOrderSerializer, PackageOrderSerializer
+from core.filters               import OrderFilter
+from core.permissions           import OrderDetailPermission
+
 
 detail_serializer_by_type = {
     "cafe"    : CafeOrderSerializer,
@@ -27,7 +23,6 @@ class OrderView(generics.ListCreateAPIView):
     serializer_class = OrderSerializer
     filter_backends  = [filters.DjangoFilterBackend]
     filterset_class  = OrderFilter
-    
     
     def create(self, request, *args, **kwargs):
         
@@ -51,18 +46,18 @@ class OrderView(generics.ListCreateAPIView):
         detail_data = self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
 
-        response_data = {
-            'common_data': serializer.data,
-            'detail_data': detail_data
-        }
+        # response_data = {
+        #     'common_data': serializer.data,
+        #     'detail_data': detail_data
+        # }
 
-        return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
     
     
     def perform_create(self, serializer,**kwargs):
         user = self.request.user
         created_order = serializer.save(user = self.request.user)
-  
+        
         detail_serializer = detail_serializer_by_type[created_order.type](data=self.request.data)
         detail_serializer.is_valid(raise_exception=True)
         
@@ -71,20 +66,9 @@ class OrderView(generics.ListCreateAPIView):
     
 
 class OrderDetailView(generics.RetrieveDestroyAPIView):
-    permission_classes = (ReviewUserOrIsStaffOrReadOnly,)
+    permission_classes = (OrderDetailPermission,)
     queryset         = Order.objects.all()
     serializer_class = OrderSerializer
     filter_backends  = [filters.DjangoFilterBackend]
     lookup_url_kwarg = 'order_id'
     lookup_field = 'id'
-    
-    # #overriding get_object
-    # def get_object(self):
-    #     queryset = self.get_queryset()
-    #     lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
-        
-    #     filter_kwargs = {self.lookup_field: self.kwargs[lookup_url_kwarg]}
-    #     obj = get_object_or_404(queryset, **filter_kwargs)
-    #     self.check_object_permissions(self.request, obj)
-        
-    #     return obj

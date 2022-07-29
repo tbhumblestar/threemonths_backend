@@ -10,7 +10,7 @@ class OrderedProductSerializer(serializers.ModelSerializer):
         
     class Meta:
         model  = OrderedProduct
-        fields = ["product_id","count","product_name"]
+        fields = ["product_id","buying","product_name"]
 
 
 class PackageOrderSerializer(serializers.ModelSerializer):
@@ -79,7 +79,7 @@ class OrderSerializer(serializers.ModelSerializer):
     #없는 필드 제거. 굳이 list_serializer필드를 만들지 않아도 됨
     def to_representation(self, instance,*args,**kwargs):
         ret= super().to_representation(instance)
-        
+
         #이건 안됨.. 왜?
         #type_set = set(['package','cake','cafe']).remove(ret['type'])
         

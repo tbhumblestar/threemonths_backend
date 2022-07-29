@@ -49,9 +49,9 @@ class ProductListView(generics.ListAPIView):
             additional_context['img_filter'] = img_filter
         
         #need_count
-        need_count     = self.request.query_params.get('need_count')
-        if need_count == "True":
-            additional_context["need_count"] = True
+        for_ordering    = self.request.query_params.get('for_ordering')
+        if for_ordering == "True":
+            additional_context["for_ordering"] = True
         
         #context_update
         context = super().get_serializer_context()
@@ -59,6 +59,8 @@ class ProductListView(generics.ListAPIView):
         
         return context
     
-class ProductDetailView(generics.ListAPIView):
+class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset         = Product.objects.filter(is_active = True)
     serializer_class = ProductSerializer
+    lookup_url_kwarg = 'product_id'
+    lookup_field = 'id'

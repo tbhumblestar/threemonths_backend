@@ -35,12 +35,12 @@ class ProductImageSerializer(serializers.ModelSerializer):
         #list serializer를 커스터마이징 해주려면, 새로운 serializer를 생성해서 커스터마이징 해준 후 적용시켜야 함
         #만약 그렇게 하지 않고 그냥 이 serializer를 아무리 커스터마이징해줘봤자, list가 아니라 그냥 instance를 받는 serializer를 커스터마이징해주는 것임
         list_serializer_class = FilteredProductImageSerializer
-    
 
 
 class ProductSerializer(serializers.ModelSerializer):
         
     product_images = ProductImageSerializer(many=True,read_only=True)
+    buying         = serializers.BooleanField(read_only=True,default=False)
     
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
@@ -52,7 +52,7 @@ class ProductSerializer(serializers.ModelSerializer):
             for field_name in existing-allowed:
                 self.fields.pop(field_name)
 
-                
+
     class Meta:
         model = Product
         fields = ['id',
@@ -61,17 +61,6 @@ class ProductSerializer(serializers.ModelSerializer):
                 'description',
                 'optional_description',
                 'product_images',
-                'is_active'
+                'is_active',
+                'buying'
                 ]
-    
-            
-    def to_representation(self, instance,*args,**kwargs):
-        """
-            for package_product_count
-        """
-        ret= super().to_representation(instance)
-        print(self.context)
-        if self.context.get('need_count'):
-            ret['count'] = 0
-
-        return ret
