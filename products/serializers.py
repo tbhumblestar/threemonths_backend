@@ -1,10 +1,15 @@
 from rest_framework import serializers
-from .models        import IndependentImage, Product, ProductImage
+from .models        import (
+                        IndependentImage,
+                        Product, 
+                        ProductImage    
+)
+
 
 class IndependentImageSerializer(serializers.ModelSerializer):
     
     class Meta:
-        model = IndependentImage
+        model  = IndependentImage
         fields = ['img_src','description']
 
 
@@ -29,7 +34,7 @@ class FilteredProductImageSerializer(serializers.ListSerializer):
 
 class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ProductImage
+        model  = ProductImage
         fields ='__all__'
 
         #list serializer를 커스터마이징 해주려면, 새로운 serializer를 생성해서 커스터마이징 해준 후 적용시켜야 함
@@ -57,6 +62,7 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = ['id',
                 'product_name',
+                'category',
                 'price',
                 'description',
                 'optional_description',

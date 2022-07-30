@@ -17,6 +17,7 @@ class Product(models.Model):
     tag                  = models.CharField(default=None,null=True,blank=True,max_length=50)
     sellout              = models.BooleanField(default=False)
 
+    
     def __str__(self):
         return str(self.id) + " | " + self.product_name +  "|" + " 가격 : " + str(self.price)
 
