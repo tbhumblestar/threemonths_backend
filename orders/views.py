@@ -25,7 +25,7 @@ class OrderView(generics.ListCreateAPIView):
     filterset_class  = OrderFilter
     
     def create(self, request, *args, **kwargs):
-        
+        permission_classes = (IsAuthenticated,)
         order_data = {
             'title'         : request.data.pop('title',None),
             'type'          : request.data.pop('type',None),
