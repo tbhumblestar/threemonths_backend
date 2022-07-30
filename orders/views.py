@@ -66,7 +66,7 @@ class OrderView(generics.ListCreateAPIView):
     
 
 class OrderDetailView(generics.RetrieveDestroyAPIView):
-    permission_classes = (OrderDetailPermission,)
+    # permission_classes = (OrderDetailPermission,)
     queryset         = Order.objects.all()
     serializer_class = OrderSerializer
     filter_backends  = [filters.DjangoFilterBackend]
