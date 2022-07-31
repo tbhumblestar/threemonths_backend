@@ -24,11 +24,14 @@ class Order(TimeStampedModel):
     type                   = models.CharField(max_length=100, choices=order_type)
     customer_name          = models.CharField(max_length=50)
     contact                = models.CharField(max_length=50)
-    status                 = models.CharField(max_length=50, choices= status_type, default='not_confirmed')
+    status                 = models.CharField(max_length=50, choices= status_type, default=status_type[0][0],blank=True)
     additional_explanation = models.CharField(max_length=300, null=True,blank=True)
     
     class Meta:
         db_table = 'orders'
+        
+    def __str__(self):
+        return self.user.nickname + " : " + self.type + "/ created_at : " + str(self.created_at)
         
 
 class PackageOrder(TimeStampedModel):
