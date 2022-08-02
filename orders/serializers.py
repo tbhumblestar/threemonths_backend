@@ -16,8 +16,6 @@ class OrderedProductSerializer(serializers.ModelSerializer):
     #따라서, read_only=False를 해주지 않으면,  is_valid()를 통한 유효성 검사과정에서 해당 필드가 아예 삭제되어, 해당 필드의 데이터도 사라져버림
     product_id   = serializers.IntegerField(read_only=False)
     product_name = serializers.CharField(source='product.product_name',read_only=True)
-        
-    
     
     class Meta:
         model  = OrderedProduct
@@ -30,13 +28,14 @@ class PackageOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model  = PackageOrder
         fields = [
-            "id","delivery_location","delivery_date","is_packaging",
+            "id","delivery_location","delivery_date","is_packaging","purpose",
             "orderedproducts"
         ]     
     
     @transaction.atomic
     def create(self,validated_data):
         orderedproducts = validated_data.pop('orderedproducts')
+        print(validated_data)
         packageorder = PackageOrder.objects.create(**validated_data)        
         
         for products_data in orderedproducts:

@@ -63,7 +63,7 @@ class OrderView(generics.ListCreateAPIView):
         return detail_serializer.data
     
 
-class OrderDetailView(generics.RetrieveUpdateAPIView):
+class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
     # permission_classes = (OrderDetailPermission,)
     queryset         = Order.objects.all()
     serializer_class = OrderSerializer
