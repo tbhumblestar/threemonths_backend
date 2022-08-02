@@ -32,6 +32,7 @@ class OrderView(generics.ListCreateAPIView):
     filter_backends  = [filters.DjangoFilterBackend]
     filterset_class  = OrderFilter
     
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
         permission_classes = (IsAuthenticated,)
 
