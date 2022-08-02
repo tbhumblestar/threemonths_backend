@@ -47,6 +47,7 @@ class PackageOrderSerializer(serializers.ModelSerializer):
         instance.delivery_location = validated_data.get('delivery_location',instance.delivery_location)
         instance.delivery_date     = validated_data.get('delivery_date',instance.delivery_date)
         instance.is_packaging      = validated_data.get('is_packaging',instance.is_packaging)
+        instance.purpose           = validated_data.get('purpose',instance.purpose)
         
         instance.save()
         
