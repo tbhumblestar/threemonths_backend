@@ -1,4 +1,5 @@
 from django.shortcuts           import get_object_or_404
+from django.db                  import transaction
 from rest_framework             import generics
 from rest_framework.response    import Response
 from rest_framework             import status
@@ -70,6 +71,15 @@ class OrderDetailView(generics.RetrieveUpdateAPIView):
     lookup_url_kwarg = 'order_id'
     lookup_field = 'id'
     
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+
+        serializer.context['detail'] = True
+        return Response(serializer.data)
+    
+    
+    
     def update(self, request, *args, **kwargs):
         
         partial    = kwargs.pop('partial', False)
@@ -93,10 +103,10 @@ class OrderDetailView(generics.RetrieveUpdateAPIView):
         
         type = instance.type
         detail_instance = getattr(instance,order_related_name_by_type.get(type))
-        print(instance)
+        # print(instance)
         
         detail_serializer = detail_serializer_by_type[type](instance=detail_instance,data=self.request.data,partial=partial)
-        print(detail_serializer)
+        # print(detail_serializer)
         detail_serializer.is_valid(raise_exception=True)
-        print(detail_serializer.validated_data)
+        # print(detail_serializer.validated_data)
         detail_serializer.save()

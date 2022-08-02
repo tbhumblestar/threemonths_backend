@@ -1,3 +1,4 @@
+from django.db      import transaction
 from rest_framework import serializers
 from .models        import (
                         Order,
@@ -6,6 +7,7 @@ from .models        import (
                         CafeOrder,
                         CakeOrder    
 )
+from products.models import Product
 
 
 #PackageOrder
@@ -15,6 +17,8 @@ class OrderedProductSerializer(serializers.ModelSerializer):
     product_id   = serializers.IntegerField(read_only=False)
     product_name = serializers.CharField(source='product.product_name',read_only=True)
         
+    
+    
     class Meta:
         model  = OrderedProduct
         fields = ["product_id","buying","product_name"]
@@ -30,6 +34,7 @@ class PackageOrderSerializer(serializers.ModelSerializer):
             "orderedproducts"
         ]     
     
+    @transaction.atomic
     def create(self,validated_data):
         orderedproducts = validated_data.pop('orderedproducts')
         packageorder = PackageOrder.objects.create(**validated_data)        
@@ -38,12 +43,69 @@ class PackageOrderSerializer(serializers.ModelSerializer):
             OrderedProduct.objects.create(package_order=packageorder,**products_data)
         return packageorder
 
+    @transaction.atomic
+    def update(self,instance,validated_data):
+        instance.delivery_location = validated_data.get('delivery_location',instance.delivery_location)
+        instance.delivery_date     = validated_data.get('delivery_date',instance.delivery_date)
+        instance.is_packaging      = validated_data.get('is_packaging',instance.is_packaging)
+        
+        instance.save()
+        
+        
+        #orderedproducts를 어떻게 할지 체크??
+        orderedproducts = validated_data.pop('orderedproducts',None)
+        
+        if orderedproducts:
+            
+            existing_products_id_set =  set(OrderedProduct.objects.filter(package_order=instance).values_list('product_id',flat=True))
+            
+            new_products_id_set = set()
+            for products_data in orderedproducts:
+                new_products_id_set.add(products_data['product_id'])
+            
+            
+            delete_id_set = existing_products_id_set - new_products_id_set
+            
+            OrderedProduct.objects.filter(package_order=instance,product_id__in=delete_id_set).delete()
+           
+            
+            add_id_set = new_products_id_set - existing_products_id_set
+            
+            for id in add_id_set:
+                OrderedProduct.objects.create(
+                    package_order=instance,
+                    product_id=id,
+                    buying=True
+                )
+            
+        return instance
+    
+    def to_representation(self, instance):
+        
+        ret = super().to_representation(instance)
+        
+        if self.context.get('detail'):
+            products = Product.objects.filter(is_active=True,category='bread')
+            
+            orderedproducts_id_list = list(OrderedProduct.objects.filter(package_order=instance).values_list('product_id',flat=True))
+            
+            products = [
+                {
+                    "product_id":product.id,
+                    "buying":True if product.id in orderedproducts_id_list else False,
+                    "product_name":product.product_name,
+                } for product in products
+            ]
+            
+            ret['orderedproducts'] = products
+            
+        return ret
 
 class CafeOrderSerializer(serializers.ModelSerializer):
     
     class Meta:
         model  = CafeOrder
-        fields = ['id','cafename','cafe_owner_name','corporate_registration_num','cafe_location']
+        fields = ['id','cafename','cafe_owner_name','corporate_registration_num','cafe_location','product_explanation']
 
 
 class CakeOrderSerializer(serializers.ModelSerializer):
