@@ -20,12 +20,12 @@ class Order(TimeStampedModel):
     )
 
     user                   = models.ForeignKey(User,on_delete=models.CASCADE)
-    title                  = models.CharField(max_length=100)
+    title                  = models.CharField(max_length=150)
     type                   = models.CharField(max_length=100, choices=order_type)
-    customer_name          = models.CharField(max_length=50)
-    contact                = models.CharField(max_length=50)
+    customer_name          = models.CharField(max_length=60)
+    contact                = models.CharField(max_length=60)
     status                 = models.CharField(max_length=50, choices= status_type, default=status_type[0][0],blank=True)
-    additional_explanation = models.CharField(max_length=300, null=True,blank=True)
+    additional_explanation = models.CharField(max_length=900, null=True,blank=True)
     
     class Meta:
         db_table = 'orders'
@@ -36,10 +36,10 @@ class Order(TimeStampedModel):
 
 class PackageOrder(TimeStampedModel):
     order             = models.OneToOneField('Order',on_delete=models.CASCADE,related_name='packageorders')
-    delivery_location = models.CharField(max_length=100)
+    delivery_location = models.CharField(max_length=300)
     delivery_date     = models.DateField()
-    is_packaging      = models.CharField(max_length=100,null=True,blank=True)
-    purpose           = models.CharField(max_length=200,null=True,blank=True)
+    is_packaging      = models.CharField(max_length=300,null=True,blank=True)
+    purpose           = models.CharField(max_length=600,null=True,blank=True)
     
     class Meta:
         db_table = 'package_orders'
@@ -56,10 +56,10 @@ class OrderedProduct(TimeStampedModel):
 
 class CafeOrder(TimeStampedModel):
     order                      = models.OneToOneField('Order',on_delete=models.CASCADE,related_name='cafeorders')
-    cafename                   = models.CharField(max_length=50)
-    cafe_owner_name            = models.CharField(max_length=50)
-    corporate_registration_num = models.CharField(max_length=50)
-    cafe_location              = models.CharField(max_length=50)
+    cafename                   = models.CharField(max_length=100)
+    cafe_owner_name            = models.CharField(max_length=100)
+    corporate_registration_num = models.CharField(max_length=150)
+    cafe_location              = models.CharField(max_length=300)
     product_explanation        = models.TextField(blank=True,null=True)
     
     class Meta:
