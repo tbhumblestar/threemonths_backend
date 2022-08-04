@@ -159,6 +159,8 @@ class OrderSerializer(serializers.ModelSerializer):
             ret.pop(f"{order_type}orders")
 
         #for detail check   
-        ret['is_staff'] = self.context.get('is_staff')
+        
+        if 'is_staff' in self.context:
+            ret['is_staff'] = self.context.get('is_staff')
 
         return ret
