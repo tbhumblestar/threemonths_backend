@@ -73,9 +73,9 @@ class PackageOrderSerializer(serializers.ModelSerializer):
             
             for id in add_id_set:
                 OrderedProduct.objects.create(
-                    package_order=instance,
-                    product_id=id,
-                    buying=True
+                    package_order = instance,
+                    product_id    = id,
+                    buying        = True
                 )
             
         return instance
@@ -91,9 +91,9 @@ class PackageOrderSerializer(serializers.ModelSerializer):
             
             products = [
                 {
-                    "product_id":product.id,
-                    "buying":True if product.id in orderedproducts_id_list else False,
-                    "product_name":product.product_name,
+                    "product_id"   : product.id,
+                    "buying"       : True if product.id in orderedproducts_id_list else False,
+                    "product_name" : product.product_name,
                 } for product in products
             ]
             
@@ -157,5 +157,8 @@ class OrderSerializer(serializers.ModelSerializer):
         
         for order_type in type_set:
             ret.pop(f"{order_type}orders")
+
+        #for detail check   
+        ret['is_staff'] = self.context.get('is_staff')
 
         return ret

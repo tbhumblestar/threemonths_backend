@@ -27,14 +27,14 @@ order_related_name_by_type = {
 
 class OrderView(generics.ListCreateAPIView):
     
-    queryset         = Order.objects.all()
-    serializer_class = OrderSerializer
-    filter_backends  = [filters.DjangoFilterBackend]
-    filterset_class  = OrderFilter
+    permission_classes = (IsAuthenticated,)
+    queryset           = Order.objects.all()
+    serializer_class   = OrderSerializer
+    filter_backends    = [filters.DjangoFilterBackend]
+    filterset_class    = OrderFilter
     
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        permission_classes = (IsAuthenticated,)
 
         #want_fields
         additional_context = {}
@@ -65,20 +65,21 @@ class OrderView(generics.ListCreateAPIView):
     
 
 class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
-    # permission_classes = (OrderDetailPermission,)
+    permission_classes = (OrderDetailPermission,)
     queryset         = Order.objects.all()
     serializer_class = OrderSerializer
     filter_backends  = [filters.DjangoFilterBackend]
     lookup_url_kwarg = 'order_id'
     lookup_field = 'id'
     
+    
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
 
-        serializer.context['detail'] = True
+        serializer.context['detail']   = True
+        serializer.context['is_staff'] = request.user.is_staff
         return Response(serializer.data)
-    
     
     
     def update(self, request, *args, **kwargs):
@@ -97,17 +98,14 @@ class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
 
         return Response(serializer.data)
 
+
     def perform_update(self, serializer, instance, partial):
         
         serializer.save()
         
-        
         type = instance.type
         detail_instance = getattr(instance,order_related_name_by_type.get(type))
-        # print(instance)
-        
         detail_serializer = detail_serializer_by_type[type](instance=detail_instance,data=self.request.data,partial=partial)
-        # print(detail_serializer)
         detail_serializer.is_valid(raise_exception=True)
-        # print(detail_serializer.validated_data)
+
         detail_serializer.save()
