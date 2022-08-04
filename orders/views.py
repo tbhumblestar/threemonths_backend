@@ -38,16 +38,16 @@ class OrderView(generics.ListCreateAPIView):
 
         #want_fields
         additional_context = {}
-        want_fields     = self.request.query_params.get('fields')
+        want_fields        = self.request.query_params.get('fields')
         if want_fields:
             additional_context['want_fields'] = tuple(want_fields.split(','))
         
         
-        serializer = self.get_serializer(data=request.data,context=additional_context)
+        serializer  = self.get_serializer(data=request.data,context=additional_context)
         serializer.is_valid(raise_exception=True)
         
         detail_data = self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
+        headers     = self.get_success_headers(serializer.data)
 
 
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
@@ -66,11 +66,11 @@ class OrderView(generics.ListCreateAPIView):
 
 class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (OrderDetailPermission,)
-    queryset         = Order.objects.all()
-    serializer_class = OrderSerializer
-    filter_backends  = [filters.DjangoFilterBackend]
-    lookup_url_kwarg = 'order_id'
-    lookup_field = 'id'
+    queryset           = Order.objects.all()
+    serializer_class   = OrderSerializer
+    filter_backends    = [filters.DjangoFilterBackend]
+    lookup_url_kwarg   = 'order_id'
+    lookup_field       = 'id'
     
     
     def retrieve(self, request, *args, **kwargs):
@@ -103,8 +103,8 @@ class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
         
         serializer.save()
         
-        type = instance.type
-        detail_instance = getattr(instance,order_related_name_by_type.get(type))
+        type              = instance.type
+        detail_instance   = getattr(instance,order_related_name_by_type.get(type))
         detail_serializer = detail_serializer_by_type[type](instance=detail_instance,data=self.request.data,partial=partial)
         detail_serializer.is_valid(raise_exception=True)
 
