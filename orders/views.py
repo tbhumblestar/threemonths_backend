@@ -3,13 +3,17 @@ from django.db                  import transaction
 from rest_framework             import generics
 from rest_framework.response    import Response
 from rest_framework             import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated 
+
 from django_filters             import rest_framework as filters
 
 from .models                    import Order, PackageOrder, OrderedProduct
 from .serializers               import OrderSerializer, CafeOrderSerializer, CakeOrderSerializer, PackageOrderSerializer
 from core.filters               import OrderFilter
-from core.permissions           import OrderDetailPermission
+from core.permissions           import (
+                                    OrderDetailPermission,
+                                    OrderPermission,
+                                    )
 
 
 detail_serializer_by_type = {
@@ -27,7 +31,7 @@ order_related_name_by_type = {
 
 class OrderView(generics.ListCreateAPIView):
     
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (OrderPermission,)
     queryset           = Order.objects.all()
     serializer_class   = OrderSerializer
     filter_backends    = [filters.DjangoFilterBackend]

@@ -7,6 +7,12 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         return request.method == 'GET' or admin_permission
 
 
+class OrderPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        is_authenticated = bool(request.user and request.user.is_authenticated)
+        return request.method == 'GET' or is_authenticated    
+
+
 class OrderDetailPermission(permissions.BasePermission):
     
     """
