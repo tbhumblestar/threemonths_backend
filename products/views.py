@@ -1,13 +1,13 @@
+import re
+
 from rest_framework          import generics
 from rest_framework.response import Response
 from django_filters          import rest_framework as filters
+from drf_spectacular.utils   import extend_schema
 
-
-from .models      import Product,ProductImage, IndependentImage
+from .models      import Product, IndependentImage
 from .serializers import IndependentImageSerializer, ProductSerializer
 from core.filters import IndependentImageFilter, ProductFilter
-
-import re
 
 
 class IndependentImageListView(generics.ListAPIView):
@@ -59,6 +59,7 @@ class ProductListView(generics.ListAPIView):
         
         return context
     
+@extend_schema(methods=['PUT'], exclude=True)
 class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset         = Product.objects.filter(is_active = True)
     serializer_class = ProductSerializer

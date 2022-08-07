@@ -24,7 +24,7 @@ class Order(TimeStampedModel):
     type                   = models.CharField(max_length=100, choices=order_type)
     customer_name          = models.CharField(max_length=60)
     contact                = models.CharField(max_length=60)
-    status                 = models.CharField(max_length=50, choices= status_type, default=status_type[0][0],blank=True)
+    status                 = models.CharField(max_length=50, choices= status_type,blank=True,default='not_confirmed')
     additional_explanation = models.CharField(max_length=900, null=True,blank=True)
     
     class Meta:

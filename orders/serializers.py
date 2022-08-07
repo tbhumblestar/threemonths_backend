@@ -1,5 +1,7 @@
-from django.db      import transaction
-from rest_framework import serializers
+from django.db             import transaction
+from rest_framework        import serializers
+from drf_spectacular.utils import extend_schema_serializer
+
 from .models        import (
                         Order,
                         PackageOrder,

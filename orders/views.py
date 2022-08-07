@@ -1,19 +1,14 @@
-from django.shortcuts           import get_object_or_404
-from django.db                  import transaction
-from rest_framework             import generics
-from rest_framework.response    import Response
-from rest_framework             import status
-from rest_framework.permissions import IsAuthenticated 
+from django.db               import transaction
+from rest_framework          import generics
+from rest_framework.response import Response
+from rest_framework          import status
+from drf_spectacular.utils   import extend_schema
+from django_filters          import rest_framework as filters
 
-from django_filters             import rest_framework as filters
-
-from .models                    import Order, PackageOrder, OrderedProduct
-from .serializers               import OrderSerializer, CafeOrderSerializer, CakeOrderSerializer, PackageOrderSerializer
-from core.filters               import OrderFilter
-from core.permissions           import (
-                                    OrderDetailPermission,
-                                    OrderPermission,
-                                    )
+from .models          import Order, PackageOrder, OrderedProduct
+from .serializers     import OrderSerializer, CafeOrderSerializer, CakeOrderSerializer, PackageOrderSerializer
+from core.filters     import OrderFilter
+from core.permissions import OrderDetailPermission, OrderPermission
 
 
 detail_serializer_by_type = {
@@ -67,7 +62,7 @@ class OrderView(generics.ListCreateAPIView):
         detail_serializer.save(order = created_order)
         return detail_serializer.data
     
-
+@extend_schema(methods=['PUT'], exclude=True)
 class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (OrderDetailPermission,)
     queryset           = Order.objects.all()

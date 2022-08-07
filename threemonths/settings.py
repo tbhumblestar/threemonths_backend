@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     
     #third
     'rest_framework',
+    'drf_spectacular',
     'corsheaders',
 ]
 
@@ -146,7 +147,8 @@ CORS_ALLOW_HEADERS = (
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 
@@ -166,6 +168,22 @@ SIMPLE_JWT = {
 AUTH_USER_MODEL = 'users.User'
 # AUTH_USER_MODEL = 'core.User'
 
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'ThreeMonth API',
+    'DESCRIPTION': '서울 빵 다 팔거야!!',
+    'VERSION': '1차 배포',
+    'SERVE_INCLUDE_SCHEMA': False,
+    # OTHER SETTINGS
+    'SWAGGER_UI_SETTINGS': {
+        # https://swagger.io/docs/open-source-tools/swagger-ui/usage/configuration/  <- 여기 들어가면 어떤 옵션들이 더 있는지 알수있습니다.
+        'dom_id': '#swagger-ui',  # required(default)
+        'layout': 'BaseLayout',  # required(default)
+        'deepLinking': True,  # API를 클릭할때 마다 SwaggerUI의 url이 변경됨
+        'persistAuthorization': True,  # True 이면 SwaggerUI상 Authorize에 입력된 정보가 새로고침을 하더라도 초기화되지 않음
+        'displayOperationId': True,  # True이면 API의 urlId 값을 노출 대체로 DRF api name둘과 일치하기때문에 api를 찾을때 유용합니다.
+    },
+}
 
 
 # #ENV 사용법
