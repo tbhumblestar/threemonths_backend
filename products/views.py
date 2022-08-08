@@ -36,7 +36,7 @@ class IndependentImageListView(generics.ListAPIView):
     ],
 )
 class ProductListView(generics.ListAPIView):
-    queryset         = Product.objects.filter(is_active = True)
+    queryset         = Product.objects.filter(is_active = True).prefetch_related('product_images')
     serializer_class = ProductSerializer
     filter_backends  = [filters.DjangoFilterBackend]
     filterset_class  = ProductFilter
@@ -76,6 +76,7 @@ class ProductListView(generics.ListAPIView):
         context.update(additional_context)
         
         return context
+    
     
 @extend_schema(methods=['PUT','patch','delete'], exclude=True)
 class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
