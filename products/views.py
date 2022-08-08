@@ -3,7 +3,7 @@ import re
 from rest_framework          import generics
 from rest_framework.response import Response
 from django_filters          import rest_framework as filters
-from drf_spectacular.utils   import extend_schema
+from drf_spectacular.utils   import extend_schema, OpenApiParameter, OpenApiExample, OpenApiTypes
 
 from .models      import Product, IndependentImage
 from .serializers import IndependentImageSerializer, ProductSerializer
@@ -16,7 +16,24 @@ class IndependentImageListView(generics.ListAPIView):
     filter_backends  = [filters.DjangoFilterBackend]
     filterset_class  = IndependentImageFilter
     
-
+@extend_schema(
+    description='Check Kakao access_token and return JWT_TOKEN',
+    parameters=[
+        OpenApiParameter(
+            name        = 'fields',
+            type        = OpenApiTypes.STR,
+            location    = OpenApiParameter.QUERY,
+            required    = False,
+            description = "응답으로 받을 상품의 필드를 입력",
+            examples    = [OpenApiExample(
+                name           = 'fields',
+                value          = 'id,product_name,price,product_images,buying',
+                parameter_only = OpenApiParameter.QUERY,
+                description    = "필요한 필드의 이름을 ,로 구분해서 넣어주면 됩니다. \n\n 아무것도 넣어주지 않을 경우, 응답으로 상품의 모든 필드에 대한 정보를 얻을 수 있습니다."
+                )]
+            ),
+    ],
+)
 class ProductListView(generics.ListAPIView):
     queryset         = Product.objects.filter(is_active = True)
     serializer_class = ProductSerializer
@@ -59,7 +76,7 @@ class ProductListView(generics.ListAPIView):
         
         return context
     
-@extend_schema(methods=['PUT'], exclude=True)
+@extend_schema(methods=['PUT','patch','delete'], exclude=True)
 class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset         = Product.objects.filter(is_active = True)
     serializer_class = ProductSerializer

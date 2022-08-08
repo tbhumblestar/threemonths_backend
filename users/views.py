@@ -45,6 +45,7 @@ class KaKaoLoginView(APIView):
     parameters=[
         OpenApiParameter(
             name        = 'kakao_access_token',
+            type        = OpenApiTypes.STR,
             location    = OpenApiParameter.HEADER,
             required    = True,
             description = "kaokao_access_token",

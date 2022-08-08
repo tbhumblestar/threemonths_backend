@@ -1,11 +1,9 @@
-from django.http import HttpResponse,HttpRequest
-
 from django.db               import transaction
 from rest_framework          import generics
 from rest_framework          import serializers
 from rest_framework.response import Response
 from rest_framework          import status
-from drf_spectacular.utils   import extend_schema, extend_schema_view, inline_serializer, PolymorphicProxySerializer
+from drf_spectacular.utils   import extend_schema, extend_schema_view, inline_serializer, OpenApiExample, PolymorphicProxySerializer
 from django_filters          import rest_framework as filters
 
 from .models          import Order, PackageOrder, OrderedProduct
@@ -71,10 +69,78 @@ class OrderView(generics.ListCreateAPIView):
         detail_serializer.save(order = created_order)
         return detail_serializer.data
     
-@extend_schema(methods=['PUT'], exclude=True, responses=OrderSerializerSchema)
+@extend_schema(methods=['PUT'], exclude=True)
 @extend_schema_view(
-    get=extend_schema(description="hi!",responses={200 : OrderSerializerSchema}),
-    patch=extend_schema(description="hi patch!",responses={200 : OrderSerializerSchema})
+    get    = extend_schema(
+        description = "## 권한 ## \n\n 작성자또는 관리자가 아니면 조회할 수 없음",
+        responses   = {200 : OrderSerializerSchema}),
+    patch  = extend_schema(
+        description = "## 권한 ## \n\n 관리자는 언제든 수정 가능 \n\n 작성자는 status가 not_confirmed 일때만 수정 가능 <br><br/>  \n\n ## 수정할 수 있는 필드 ## \n\n type필드를 제외한 모든 필드",
+        responses   = {200 : OrderSerializerSchema},
+        request     = OrderSerializerSchema,
+        examples         = [
+        OpenApiExample(
+            name         = 'package_order',
+            description  = 'type을 제외한 모든 필드 수정 가능',
+            request_only = True,
+            value        = {
+                "title"                  : "test",
+                "customer_name"          : "tester",
+                "contact"                : "010-0000-0000",
+                "additional_explanation" : "test_explanation",
+                "status"                 : "not_confirmed",
+                "delivery_location"      : "test_location",
+                "delivery_date"          : "2022-10-10",
+                "purpose"                : "testasd",
+                "orderedproducts"        : [
+                    {
+                        "product_id":4,
+                        "buying":"True"
+                    },
+                    {
+                        "product_id":8,
+                        "buying":"True"
+                    }
+                ]
+            },
+        ),
+        OpenApiExample(
+            name         = 'cake_order',
+            description  = 'type을 제외한 모든 필드 수정 가능',
+            request_only = True,
+            value        = {
+                "title"                  : "testingasdsad",
+                "customer_name"          : "tester",
+                "contact"                : "010-0000-0000",
+                "additional_explanation" : "test_explanation",
+                "status"                 : "not_confirmed",
+                "product_id"             : 13,
+                "want_pick_up_date"      : "2022-10-15",
+                "superdubaduib"          : "asdasdasd",
+                "count"                  : 3
+},
+        ),
+        OpenApiExample(
+            name         = 'cafe_order',
+            description  = 'type을 제외한 모든 필드 수정 가능',
+            request_only = True,
+            value        = {
+                "title"                      :  "test",
+                "customer_name"              :  "tester",
+                "contact"                    :  "010-0000-0000",
+                "additional_explanation"     :  "test_explanation",
+                "status"                     : "not_confirmed",
+                "cafename"                   :  "testcafe",
+                "cafe_owner_name"            : "test_owner",
+                "corporate_registration_num" : "kkk",
+                "cafe_location"              : "test_location",
+                "product_explanation"        : "asdasdasd"
+},
+        ),
+                    ]),
+    delete = extend_schema(
+        description = "## 권한 ## \n\n 관리자는 언제든 삭제 가능 \n\n 작성자는 status가 not_confirmed 일때만 삭제 가능 <br><br/>",
+    )
 )
 class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (OrderDetailPermission,)
@@ -84,41 +150,6 @@ class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
     lookup_url_kwarg   = 'order_id'
     lookup_field       = 'id'
     
-    
-    # @extend_schema(
-    #     # responses=OrderSerializerSchema,
-    #     responses={200 : inline_serializer('user',{
-    #     "nickname" : serializers.CharField(),
-    #     "email"    : serializers.EmailField(),
-    #     "id"       : serializers.IntegerField(),
-    #     "jwt"      : inline_serializer(
-    #         'jwt',
-    #         fields = {
-    #             'refresh' : serializers.CharField(),
-    #             'access'  : serializers.CharField(),
-    #         }
-    #         ),
-    # }
-    #                             ),}
-    #     )
-
-    
-    # @extend_schema(
-    #     # responses=OrderSerializerSchema,
-    #     responses={200 : inline_serializer('user',{
-    #     "nickname" : serializers.CharField(),
-    #     "email"    : serializers.EmailField(),
-    #     "id"       : serializers.IntegerField(),
-    #     "jwt"      : inline_serializer(
-    #         'jwt',
-    #         fields = {
-    #             'refresh' : serializers.CharField(),
-    #             'access'  : serializers.CharField(),
-    #         }
-    #         ),
-    # }
-    #                             ),}
-    #     )
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
