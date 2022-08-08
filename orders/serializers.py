@@ -120,7 +120,7 @@ class CakeOrderSerializer(serializers.ModelSerializer):
             "id","product_id","product_name","want_pick_up_date","count"
             ]
 
-
+@extend_schema_serializer(exclude_fields=None)
 class OrderSerializer(serializers.ModelSerializer):
     """
         order_main_serializer

@@ -1,14 +1,18 @@
+from django.http import HttpResponse,HttpRequest
+
 from django.db               import transaction
 from rest_framework          import generics
+from rest_framework          import serializers
 from rest_framework.response import Response
 from rest_framework          import status
-from drf_spectacular.utils   import extend_schema
+from drf_spectacular.utils   import extend_schema, extend_schema_view, inline_serializer, PolymorphicProxySerializer
 from django_filters          import rest_framework as filters
 
 from .models          import Order, PackageOrder, OrderedProduct
 from .serializers     import OrderSerializer, CafeOrderSerializer, CakeOrderSerializer, PackageOrderSerializer
 from core.filters     import OrderFilter
 from core.permissions import OrderDetailPermission, OrderPermission
+from core.schema      import OrderSerializerSchema
 
 
 detail_serializer_by_type = {
@@ -23,7 +27,10 @@ order_related_name_by_type = {
     "cafe"    : 'cafeorders',
 }
 
-
+@extend_schema(
+    request   = OrderSerializerSchema,
+    responses = OrderSerializerSchema,
+)
 class OrderView(generics.ListCreateAPIView):
     
     permission_classes = (OrderPermission,)
@@ -31,6 +38,8 @@ class OrderView(generics.ListCreateAPIView):
     serializer_class   = OrderSerializer
     filter_backends    = [filters.DjangoFilterBackend]
     filterset_class    = OrderFilter
+    
+    
     
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -62,7 +71,11 @@ class OrderView(generics.ListCreateAPIView):
         detail_serializer.save(order = created_order)
         return detail_serializer.data
     
-@extend_schema(methods=['PUT'], exclude=True)
+@extend_schema(methods=['PUT'], exclude=True, responses=OrderSerializerSchema)
+@extend_schema_view(
+    get=extend_schema(description="hi!",responses={200 : OrderSerializerSchema}),
+    patch=extend_schema(description="hi patch!",responses={200 : OrderSerializerSchema})
+)
 class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (OrderDetailPermission,)
     queryset           = Order.objects.all()
@@ -72,6 +85,40 @@ class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
     lookup_field       = 'id'
     
     
+    # @extend_schema(
+    #     # responses=OrderSerializerSchema,
+    #     responses={200 : inline_serializer('user',{
+    #     "nickname" : serializers.CharField(),
+    #     "email"    : serializers.EmailField(),
+    #     "id"       : serializers.IntegerField(),
+    #     "jwt"      : inline_serializer(
+    #         'jwt',
+    #         fields = {
+    #             'refresh' : serializers.CharField(),
+    #             'access'  : serializers.CharField(),
+    #         }
+    #         ),
+    # }
+    #                             ),}
+    #     )
+
+    
+    # @extend_schema(
+    #     # responses=OrderSerializerSchema,
+    #     responses={200 : inline_serializer('user',{
+    #     "nickname" : serializers.CharField(),
+    #     "email"    : serializers.EmailField(),
+    #     "id"       : serializers.IntegerField(),
+    #     "jwt"      : inline_serializer(
+    #         'jwt',
+    #         fields = {
+    #             'refresh' : serializers.CharField(),
+    #             'access'  : serializers.CharField(),
+    #         }
+    #         ),
+    # }
+    #                             ),}
+    #     )
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
@@ -98,6 +145,22 @@ class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
         return Response(serializer.data)
 
 
+    @extend_schema(
+        # responses=OrderSerializerSchema,
+        responses={200 : inline_serializer('user',{
+        "nickname" : serializers.CharField(),
+        "email"    : serializers.EmailField(),
+        "id"       : serializers.IntegerField(),
+        "jwt"      : inline_serializer(
+            'jwt',
+            fields = {
+                'refresh' : serializers.CharField(),
+                'access'  : serializers.CharField(),
+            }
+            ),
+    }
+                                ),}
+        )
     def perform_update(self, serializer, instance, partial):
         
         serializer.save()
