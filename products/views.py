@@ -1,7 +1,6 @@
 import re
 
 from rest_framework          import generics
-from rest_framework.response import Response
 from django_filters          import rest_framework as filters
 from drf_spectacular.utils   import extend_schema, OpenApiParameter, OpenApiExample, OpenApiTypes
 
@@ -16,10 +15,7 @@ class IndependentImageListView(generics.ListAPIView):
     serializer_class = IndependentImageSerializer
     filter_backends  = [filters.DjangoFilterBackend]
     filterset_class  = IndependentImageFilter
-    
-    @query_debugger
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+
     
 @extend_schema(
     description='Check Kakao access_token and return JWT_TOKEN',
