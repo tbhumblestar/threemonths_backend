@@ -39,7 +39,7 @@ class IndependentImageListView(generics.ListAPIView):
     ],
 )
 class ProductListView(generics.ListAPIView):
-    queryset         = Product.objects.filter(is_active = True).prefetch_related('product_images')
+    queryset         = Product.objects.all().prefetch_related('product_images')
     serializer_class = ProductSerializer
     filter_backends  = [filters.DjangoFilterBackend]
     filterset_class  = ProductFilter
@@ -69,10 +69,11 @@ class ProductListView(generics.ListAPIView):
             # }
             additional_context['img_filter'] = img_filter
         
-        #need_count
-        for_ordering    = self.request.query_params.get('for_ordering')
-        if for_ordering == "True":
-            additional_context["for_ordering"] = True
+        # 삭제해도될듯? 일단 주석처리
+        # #need_count
+        # for_ordering    = self.request.query_params.get('for_ordering')
+        # if for_ordering == "True":
+        #     additional_context["for_ordering"] = True
         
         #context_update
         context = super().get_serializer_context()

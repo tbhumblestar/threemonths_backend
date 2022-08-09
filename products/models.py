@@ -19,7 +19,7 @@ class Product(models.Model):
 
     
     def __str__(self):
-        return str(self.id) + " | " + self.product_name +  "|" + " 가격 : " + str(self.price)
+        return str(self.id) + " | " + self.product_name +  " | " + " 가격 : " + str(self.price)
 
     class Meta:
         db_table = 'products'
