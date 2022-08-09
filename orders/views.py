@@ -89,7 +89,7 @@ class OrderView(generics.ListCreateAPIView):
         description = "## 권한 ## \n\n 작성자또는 관리자가 아니면 조회할 수 없음",
         responses   = {200 : OrderSerializerSchema}),
     patch  = extend_schema(
-        description = "## 권한 ## \n\n - 관리자는 언제든 수정 가능 \n\n 작성자는 status가 not_confirmed 일때만 수정 가능 <br><br/>  \n\n ## 수정할 수 있는 필드 ## \n\n type필드를 제외한 모든 필드",
+        description = "## 권한 ## \n\n 관리자는 언제든 수정 가능 \n\n 작성자는 status가 not_confirmed 일때만 수정 가능 <br><br/>  \n\n ## 수정할 수 있는 필드 ## \n\n type필드를 제외한 모든 필드",
         responses   = {200 : OrderSerializerSchema},
         request     = OrderSerializerSchema,
         examples         = [
