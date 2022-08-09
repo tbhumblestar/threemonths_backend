@@ -10,7 +10,7 @@ class IndependentImageSerializer(serializers.ModelSerializer):
     
     class Meta:
         model  = IndependentImage
-        fields = ['img_src','description']
+        fields = ['id','img_src','description']
 
 
 #List serializer 데이터 하나하나에 적용됨

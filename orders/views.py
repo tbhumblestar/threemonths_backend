@@ -1,3 +1,4 @@
+from pymysql                 import NULL
 from django.db.models        import Prefetch
 from django.db               import transaction
 from rest_framework          import generics
@@ -150,6 +151,85 @@ class OrderView(generics.ListCreateAPIView):
                 "product_explanation"        : "asdasdasd"
 },
         ),
+        OpenApiExample(
+            name          = 'package_order_response',
+            response_only = True,
+            value         = {
+                "id"                     : 342,
+                "type"                   : "package",
+                "title"                  : "test",
+                "customer_name"          : "tester",
+                "contact"                : "010-0000-0000",
+                "status"                 : "not_confirmed",
+                "additional_explanation" : NULL,
+                "created_at"             : "2022-08-08T03:40:58.554790",
+                "updated_at"             : "2022-08-08T03:40:58.554824",
+                "packageorders"          : {
+                    "id"                : 182,
+                    "delivery_location" : "test_location",
+                    "delivery_date"     : "2022-10-10",
+                    "is_packaging"      : NULL,
+                    "purpose"           : "testasdasdfgasdasdasdasdasdasdsad",
+                    "orderedproducts"   : [
+                        {
+                            "product_id"   : 4,
+                            "buying"       : True,
+                            "product_name" : "플레인 휘낭시에"
+                        },
+                        {
+                            "product_id"    : 8,
+                            "buying"        : True,
+                            "product_name"  : "둘세 마들렌"
+                        }
+                    ]
+                }
+}
+        ),                
+        OpenApiExample(
+            name          ='cake_order_response',
+            response_only = True,
+            value         = {
+                "id"                     : 346,
+                "type"                   : "cake",
+                "title"                  : "testingasdsad",
+                "customer_name"          : "tester",
+                "contact"                : "010-0000-0000",
+                "status"                 : "not_confirmed",
+                "additional_explanation" : NULL,
+                "created_at"             : "2022-08-08T04:12:07.160059",
+                "updated_at"             : "2022-08-08T04:12:07.160088",
+                "cakeorders"             : {
+                    "id"                : 65,
+                    "product_id"        : 16,
+                    "product_name"      : "시즌 케이크(딸기)",
+                    "want_pick_up_date" : "2022-10-15",
+                    "count"             : 3
+                }
+            },
+        ),                
+        OpenApiExample(
+            name          ='cafe_order_response',
+            response_only = True,
+            value         = {
+                "id"                     : 347,
+                "type"                   : "cafe",
+                "title"                  : "test",
+                "customer_name"          : "tester",
+                "contact"                : "010-0000-0000",
+                "status"                 : "not_confirmed",
+                "additional_explanation" : NULL,
+                "created_at"             : "2022-08-08T04:13:11.779439",
+                "updated_at"             : "2022-08-08T04:13:11.779466",
+                "cafeorders"             : {
+                    "id"                         : 48,
+                    "cafename"                   : "testcafe",
+                    "cafe_owner_name"            : "test_owner",
+                    "corporate_registration_num" : "kkk",
+                    "cafe_location"              : "test_location",
+                    "product_explanation"        : "asdasdasd"
+                }
+            }
+        ),                
                     ]),
     delete = extend_schema(
         description = "## 권한 ## \n\n 관리자는 언제든 삭제 가능 \n\n 작성자는 status가 not_confirmed 일때만 삭제 가능 <br><br/>",
