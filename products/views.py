@@ -84,7 +84,7 @@ class ProductListView(generics.ListAPIView):
     
 @extend_schema(methods=['PUT','patch','delete'], exclude=True)
 class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset         = Product.objects.filter(is_active = True)
+    queryset         = Product.objects.all()
     serializer_class = ProductSerializer
     lookup_url_kwarg = 'product_id'
     lookup_field = 'id'
