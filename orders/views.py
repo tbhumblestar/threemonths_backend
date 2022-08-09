@@ -151,12 +151,17 @@ class OrderView(generics.ListCreateAPIView):
 )
 class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (OrderDetailPermission,)
-    queryset           = Order.objects.all()
+    queryset           = Order.objects.all().\
+        select_related('cafeorders').\
+        select_related('cakeorders').\
+        select_related('packageorders').\
+        prefetch_related('packageorders__orderedproducts__product')
     serializer_class   = OrderSerializer
     filter_backends    = [filters.DjangoFilterBackend]
     lookup_url_kwarg   = 'order_id'
     lookup_field       = 'id'
     
+    @query_debugger
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
