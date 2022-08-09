@@ -11,6 +11,7 @@ from .serializers     import OrderSerializer, CafeOrderSerializer, CakeOrderSeri
 from core.filters     import OrderFilter
 from core.permissions import OrderDetailPermission, OrderPermission
 from core.schema      import OrderSerializerSchema
+from core.decorators  import query_debugger
 
 
 detail_serializer_by_type = {
@@ -32,12 +33,18 @@ order_related_name_by_type = {
 class OrderView(generics.ListCreateAPIView):
     
     permission_classes = (OrderPermission,)
-    queryset           = Order.objects.all()
+    queryset           = Order.objects.all().\
+        select_related('cafeorders').\
+        select_related('cakeorders').\
+        select_related('packageorders').\
+        prefetch_related('packageorders__orderedproducts__product')
     serializer_class   = OrderSerializer
     filter_backends    = [filters.DjangoFilterBackend]
     filterset_class    = OrderFilter
     
-    
+    @query_debugger
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
     
     @transaction.atomic
     def create(self, request, *args, **kwargs):
