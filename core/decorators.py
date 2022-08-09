@@ -11,7 +11,7 @@ def query_debugger(func):
         start  = time.perf_counter()
         result = func(*args, **kwargs)
         end    = time.perf_counter()
-        number_of_end_queries = len(connection.queries) - 2 if len(connection.queries) else 0
+        number_of_end_queries = len(connection.queries) - 0 if len(connection.queries) else 0
         print(f"-------------------------------------------------------------------")
         print(f"start_time :{datetime.datetime.now()}")
         print(f"Function : {func.__name__}")
