@@ -49,7 +49,7 @@ class ProductImage(models.Model):
     description = models.CharField(max_length=100,null=True,blank=True)
     
     def __str__(self):
-        return self.product.product_name
+        return f"{self.page} page | {self.product.product_name}"
     
     class Meta:
         db_table = 'product_images'

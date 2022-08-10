@@ -22,8 +22,8 @@ class Order(TimeStampedModel):
     user                   = models.ForeignKey(User,on_delete=models.CASCADE)
     title                  = models.CharField(max_length=150)
     type                   = models.CharField(max_length=100, choices=order_type)
-    customer_name          = models.CharField(max_length=60)
-    contact                = models.CharField(max_length=60)
+    customer_name          = models.CharField(max_length=90)
+    contact                = models.CharField(max_length=150)
     status                 = models.CharField(max_length=50, choices= status_type,blank=True,default='not_confirmed')
     additional_explanation = models.CharField(max_length=900, null=True,blank=True)
     
