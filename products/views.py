@@ -16,9 +16,6 @@ class IndependentImageListView(generics.ListAPIView):
     filter_backends  = [filters.DjangoFilterBackend]
     filterset_class  = IndependentImageFilter
 
-    @query_debugger
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
     
 @extend_schema(
     description='Check Kakao access_token and return JWT_TOKEN',

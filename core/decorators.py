@@ -16,7 +16,7 @@ def query_debugger(func):
         print(f"start_time :{datetime.datetime.now()}")
         print(f"Function : {func.__name__}")
         print(f"Number of Queries : {number_of_end_queries-number_of_start_queries}")
-        print(f"Finished in : {(end - start):.2f}s")
+        print(f"Finished in : {(end - start):.3f}s")
         print(f"-------------------------------------------------------------------")
         return result
     return wrapper
