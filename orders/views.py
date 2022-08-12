@@ -38,12 +38,7 @@ class OrderView(generics.ListCreateAPIView):
     queryset           = Order.objects.all().\
         select_related('cafeorders','cakeorders','packageorders','cakeorders__product').\
         prefetch_related(Prefetch('packageorders__orderedproducts',queryset=OrderedProduct.objects.select_related('product'))) # 횟수가 2회가 됨.. 왜와이???
-        # prefetch_related('packageorders__orderedproducts__product') #횟수가 3회
-        # 그냥 __를 해서 들어가면, 들어간횟수만큼 무식하게 다 쿼리요청을 함 요청함.
-        #prefetch로 저렇게 접근하면, 한ㄷ번에 두 테이블정보를 요처을 함
-        # 다음을 참고
-        # https://docs.djangoproject.com/en/4.1/ref/models/querysets/
-        # to_attr how?
+
         
     serializer_class   = OrderSerializer
     filter_backends    = [filters.DjangoFilterBackend]
@@ -240,7 +235,7 @@ class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset           = Order.objects.all().\
         select_related('cafeorders','cakeorders','packageorders','cakeorders__product').\
         prefetch_related(Prefetch('packageorders__orderedproducts',queryset=OrderedProduct.objects.select_related('product')))
-        # prefetch_related('packageorders__orderedproducts__product')
+
     serializer_class   = OrderSerializer
     filter_backends    = [filters.DjangoFilterBackend]
     lookup_url_kwarg   = 'order_id'
