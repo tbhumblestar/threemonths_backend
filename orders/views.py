@@ -37,16 +37,13 @@ class OrderView(generics.ListCreateAPIView):
     permission_classes = (OrderPermission,)
     queryset           = Order.objects.all().\
         select_related('cafeorders','cakeorders','packageorders','cakeorders__product').\
-        prefetch_related(Prefetch('packageorders__orderedproducts',queryset=OrderedProduct.objects.select_related('product'))) # 횟수가 2회가 됨.. 왜와이???
+        prefetch_related(Prefetch('packageorders__orderedproducts',queryset=OrderedProduct.objects.select_related('product')))
 
         
     serializer_class   = OrderSerializer
     filter_backends    = [filters.DjangoFilterBackend]
     filterset_class    = OrderFilter
-    
-    @query_debugger
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+
     
     @transaction.atomic
     def create(self, request, *args, **kwargs):

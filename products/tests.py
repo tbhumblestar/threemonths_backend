@@ -1,12 +1,13 @@
 from rest_framework.test import APITestCase
 from rest_framework      import status
 from django.urls         import reverse
+import json
 
-from products.models import IndependentImage
+from products.models import IndependentImage, Product, ProductImage
 
 class IndependentImageListTestCase(APITestCase):
     def setUp(self):
-        test_indenpendent_image_list = [
+        setup_indenpendent_image_list = [
             IndependentImage(
                 id      = 1,
                 img_src = 'test1@test.com1',
@@ -24,7 +25,7 @@ class IndependentImageListTestCase(APITestCase):
         ]
         
         IndependentImage.objects.bulk_create(
-            test_indenpendent_image_list
+            setup_indenpendent_image_list
         )
     
     def test_list_independent_images_success(self):
@@ -45,4 +46,136 @@ class IndependentImageListTestCase(APITestCase):
         response = self.client.get(reverse('IndependentImage'))
         
         self.assertEqual(response.status_code,status.HTTP_200_OK)
-        self.assertEqual(response.json(),data)
+        self.assertEqual(response.data,data)
+        
+        
+class ProductListRetrieveTestCase(APITestCase):
+    def setUp(self):
+        
+        setup_product_list = [
+            Product(
+                id                   = 1,
+                category             = 'bread',
+                product_name         = 'test_product1',
+                price                = 10000,
+                optional_description = 'test_optional_description1',
+                description          = 'test_description',
+                is_active            = True,
+                tag                  = None,
+                sellout              = False,
+            ),
+            Product(
+                id                   = 2,
+                category             = 'bread',
+                product_name         = 'test_product2',
+                price                = 10000,
+                optional_description = 'test_optional_description2',
+                description          = 'test_description',
+                is_active            = True,
+                tag                  = None,
+                sellout              = False,
+            ),
+            Product(
+                id                   = 3,
+                category             = 'cake',
+                product_name         = 'test_product3',
+                price                = 10000,
+                optional_description = 'test_optional_description3',
+                description          = 'test_description',
+                is_active            = True,
+                tag                  = None,
+                sellout              = False,
+            ),
+        ]
+        
+        setup_product_image_list=[
+            ProductImage(
+                id          = 1, 
+                product_id  = 1,
+                img_src     = 'test_img1@test.com',
+                page        = 'main',
+                place       = 'list',
+                description = 'test_desc1',
+            ),
+            ProductImage(
+                id          = 2, 
+                product_id  = 1,
+                img_src     = 'test_img2@test.com',
+                page        = 'detail',
+                place       = 'list',
+                description = 'test_desc2',
+            ),
+            ProductImage(
+                id          = 3, 
+                product_id  = 2,
+                img_src     = 'test_img3@test.com',
+                page        = 'main',
+                place       = 'list',
+                description = 'test_desc3',
+            ),
+            ProductImage(
+                id          = 4, 
+                product_id  = 2,
+                img_src     = 'test_img4@test.com',
+                page        = 'main',
+                place       = 'list',
+                description = 'test_desc4',
+            ),
+            ProductImage(
+                id          = 5, 
+                product_id  = 3,
+                img_src     = 'test_img5@test.com',
+                page        = 'main',
+                place       = 'list',
+                description = 'test_desc5',
+            ),
+        ]
+        
+        Product.objects.bulk_create(setup_product_list)
+        ProductImage.objects.bulk_create(setup_product_image_list)
+        
+    # def test_list_product_category_bread(self):
+    #     pass
+    
+    # def test_list_product_img_filter(self):
+    #     pass
+    
+    # def test_list_product_field_filtering(self):
+    #     pass
+        
+    def test_retrieve_product(self):
+        data = {
+            "id"                   : 1,
+            "category"             : 'bread',
+            "product_name"         : 'test_product1',
+            "price"                : 10000,
+            "optional_description" : 'test_optional_description1',
+            "description"          : 'test_description',
+            "is_active"            : True,
+            "product_images"       : [
+                {
+                'id'          : 1, 
+                'product'     : 1,
+                'img_src'     : 'test_img1@test.com',
+                'page'        : 'main',
+                'place'       : 'list',
+                'description' : 'test_desc1',
+            },
+                {
+                'id'          : 2, 
+                'product'     : 1,
+                'img_src'     : 'test_img2@test.com',
+                'page'        : 'detail',
+                'place'       : 'list',
+                'description' : 'test_desc2',
+            },
+            ],
+        }
+    
+        
+        # response , self.client.get(reverse('ProductDetail'),args=(1,))
+        response = self.client.get(reverse('ProductDetail',args=(1,)))
+        
+        self.assertEqual(response.status_code,status.HTTP_200_OK)
+        print(response.json())
+        self.assertEqual(response.data,data)

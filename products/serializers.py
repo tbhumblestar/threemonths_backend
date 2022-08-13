@@ -45,7 +45,6 @@ class ProductImageSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
         
     product_images = ProductImageSerializer(many=True,read_only=True)
-    buying         = serializers.BooleanField(read_only=True,default=False)
     
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
@@ -68,5 +67,4 @@ class ProductSerializer(serializers.ModelSerializer):
                 'optional_description',
                 'product_images',
                 'is_active',
-                'buying'
                 ]

@@ -37,7 +37,6 @@ class PackageOrderSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def create(self,validated_data):
         orderedproducts = validated_data.pop('orderedproducts')
-        print(validated_data)
         packageorder = PackageOrder.objects.create(**validated_data)        
         
         for products_data in orderedproducts:
