@@ -191,21 +191,116 @@ class ProductListRetrieveTestCase(APITestCase):
                 }
                 ],
         },
-        
         ]
+        
         #follow=True옵션을 주면 301에러를 피할 수 있음
         response = self.client.get('/products?category=bread',follow=True)
-        
-        print(response.json())
         
         self.assertEqual(response.status_code,status.HTTP_200_OK)
         self.assertEqual(response.json(),data)
     
-    # def test_list_product_img_filter(self):
-    #     pass
+    def test_list_product_img_filter(self):
+        
+        data = [
+            {
+            "id"                   : 1,
+            "category"             : 'bread',
+            "product_name"         : 'test_product1',
+            "price"                : 10000,
+            "optional_description" : 'test_optional_description1',
+            "description"          : 'test_description',
+            "is_active"            : True,
+            "product_images"       : [
+                {
+                'id'          : 1, 
+                'product'     : 1,
+                'img_src'     : 'test_img1@test.com',
+                'page'        : 'main',
+                'place'       : 'list',
+                'description' : 'test_desc1',
+            },
+            ],
+        },
+        {
+            "id"                   : 2,
+            "category"             : 'bread',
+            "product_name"         : 'test_product2',
+            "price"                : 10000,
+            "optional_description" : 'test_optional_description2',
+            "description"          : 'test_description',
+            "is_active"            : True,
+            "product_images"       : [
+                {
+                'id'         : 3,
+                'img_src'    : 'test_img3@test.com',
+                'page'       : 'main',
+                'place'      : 'list',
+                'description': 'test_desc3',
+                'product'    : 2
+                },
+                {
+                'id'         : 4,
+                'img_src'    : 'test_img4@test.com',
+                'page'       : 'main',
+                'place'      : 'list',
+                'description': 'test_desc4',
+                'product'    : 2
+                }
+                ],
+        },
+        {
+            "id"                   : 3,
+            "category"             : 'cake',
+            "product_name"         : 'test_product3',
+            "price"                : 10000,
+            "optional_description" : 'test_optional_description3',
+            "description"          : 'test_description',
+            "is_active"            : True,
+            "product_images"       : [
+                {
+                'id'         : 5,
+                'img_src'    : 'test_img5@test.com',
+                'page'       : 'main',
+                'place'      : 'list',
+                'description': 'test_desc5',
+                'product'    : 3
+                }
+                ],
+        },
+        ]
+
+        response = self.client.get('/products?img_filter=page:main,place:list',follow=True)
+
+        self.assertEqual(response.status_code,status.HTTP_200_OK)
+        self.assertEqual(response.json(),data)
     
-    # def test_list_product_field_filtering(self):
-    #     pass
+    def test_list_product_field_filtering(self):
+        
+        data = [
+            {
+            "id"                   : 1,
+            "product_name"         : 'test_product1',
+            "price"                : 10000,
+            "description"          : 'test_description',
+        },
+        {
+            "id"                   : 2,
+            "product_name"         : 'test_product2',
+            "price"                : 10000,
+            "description"          : 'test_description',
+        },
+        {
+            "id"                   : 3,
+            "product_name"         : 'test_product3',
+            "price"                : 10000,
+            "description"          : 'test_description',
+        },
+        ]
+        
+        response = self.client.get('/products?fields=id,product_name,price,description',follow=True)
+
+        self.assertEqual(response.status_code,status.HTTP_200_OK)
+        self.assertEqual(response.json(),data)
         
     def test_retrieve_product(self):
         data = {
