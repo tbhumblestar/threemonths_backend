@@ -65,13 +65,7 @@ class ProductListView(generics.ListAPIView):
             #     lst[i] : lst[i+1] for i in range(0,len(lst),2)
             # }
             additional_context['img_filter'] = img_filter
-        
-        # 삭제해도될듯? 일단 주석처리
-        # #need_count
-        # for_ordering    = self.request.query_params.get('for_ordering')
-        # if for_ordering == "True":
-        #     additional_context["for_ordering"] = True
-        
+                
         #context_update
         context = super().get_serializer_context()
         context.update(additional_context)
