@@ -93,6 +93,8 @@ class KaKaoLoginView(APIView):
             token = f"Bearer {request.headers.get('Authorization')}"
             
             response          = request_kakao(token,'login')
+
+            
             if response.status_code != 200 :
                 return Response({"message":response.json().get('msg')},status = status.HTTP_400_BAD_REQUEST)
             response          = response.json()
@@ -133,7 +135,7 @@ class KaKaoLoginView(APIView):
                 
                 return Response(data,status=status.HTTP_201_CREATED)
             
-            return Response(data,status=status.HTTP_200_OK)
+            return Response(data,status=status.HTTP_201_CREATED)
         
         except KeyError:
             return Response({'message':'KEY_ERROR'},status=status.HTTP_400_BAD_REQUEST)
