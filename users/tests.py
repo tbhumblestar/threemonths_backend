@@ -3,7 +3,7 @@ from rest_framework                  import status
 from django.urls                     import reverse
 from unittest.mock                   import patch, MagicMock
 from django.contrib.auth             import get_user_model
-from rest_framework_simplejwt.tokens import RefreshToken
+
 
 from secret_settings import SECRET_KEY,algorithms
 
@@ -55,17 +55,18 @@ class LoginPostTestCase(APITestCase):
 
         headers = {"HTTP_Authorization": "access_token"} #임시로 넣어주는 access_token. 어차피 상관X
         
+        
         ##비교데이터
         data = {
             'id'       : 1,
-            'nickname' : 'test_nickname',
-            'email'    : 'test_email@test.com',
+            'nickname' : self.user.nickname,
+            'email'    : self.user.email,
         }
         
         
         response = self.client.post(reverse('kakaologin'))
         
-        # print(jwt.decode(jwt_token, SECRET_KEY, algorithms=["HS256"]))
+
         
         jwt_access_token = response.data.pop('jwt').get('access')
         decoded_token = jwt.decode(jwt_access_token,SECRET_KEY,algorithms=algorithms)
@@ -75,3 +76,7 @@ class LoginPostTestCase(APITestCase):
         self.assertEqual(response.status_code,status.HTTP_201_CREATED)
         self.assertEqual(response.data,data)
         self.assertEqual(decoded_user_id,self.user.id)
+        
+    @classmethod
+    def tearDownClass(cls):
+        User.objects.all().delete()

@@ -48,7 +48,10 @@ class IndependentImageListTestCase(APITestCase):
         self.assertEqual(response.status_code,status.HTTP_200_OK)
         self.assertEqual(response.data,data)
         
-        
+    def tearDown(self) -> None:
+        IndependentImage.objects.all().delete()
+    
+    
 class ProductListRetrieveTestCase(APITestCase):
     def setUp(self):
         
@@ -335,3 +338,8 @@ class ProductListRetrieveTestCase(APITestCase):
         
         self.assertEqual(response.status_code,status.HTTP_200_OK)
         self.assertEqual(response.data,data)
+        
+    @classmethod
+    def tearDownClass(cls):
+        Product.objects.all().delete()
+        ProductImage.objects.all().delete()
