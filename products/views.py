@@ -78,4 +78,4 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset         = Product.objects.all()
     serializer_class = ProductSerializer
     lookup_url_kwarg = 'product_id'
-    lookup_field = 'id'
+    lookup_field     = 'id'
