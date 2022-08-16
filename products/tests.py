@@ -53,7 +53,8 @@ class IndependentImageListTestCase(APITestCase):
     
     
 class ProductListRetrieveTestCase(APITestCase):
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         
         setup_product_list = [
             Product(
