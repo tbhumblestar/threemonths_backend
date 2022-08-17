@@ -238,7 +238,6 @@ class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
     lookup_url_kwarg   = 'order_id'
     lookup_field       = 'id'
     
-    @query_debugger
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
@@ -252,10 +251,21 @@ class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
         
         partial    = kwargs.pop('partial', False)
         instance   = self.get_object()
+        
+        #detial form
+        type              = instance.type
+        detail_instance   = getattr(instance,order_related_name_by_type.get(type))
+        detail_serializer = detail_serializer_by_type[type](instance=detail_instance,data=self.request.data,partial=partial)
+        detail_serializer.is_valid(raise_exception=True)
+        detail_serializer.save()
+        
+        #다시해줘야 함. 그래야 detail폼이 반영된 order이 들고와지고, serializer.data에 디테일폼의 변경된 내용이 담길 수 잇음
+        instance   = self.get_object()
+        
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         
-        self.perform_update(serializer,instance,partial)
+        self.perform_update(serializer)
 
         if getattr(instance, '_prefetched_objects_cache', None):
             # If 'prefetch_related' has been applied to a queryset, we need to
@@ -264,13 +274,3 @@ class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
 
         return Response(serializer.data)
 
-    def perform_update(self, serializer, instance, partial):
-        
-        serializer.save()
-        
-        type              = instance.type
-        detail_instance   = getattr(instance,order_related_name_by_type.get(type))
-        detail_serializer = detail_serializer_by_type[type](instance=detail_instance,data=self.request.data,partial=partial)
-        detail_serializer.is_valid(raise_exception=True)
-
-        detail_serializer.save()

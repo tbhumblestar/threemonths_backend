@@ -12,8 +12,8 @@ import json
 User = get_user_model()
 
 Today_date        = datetime.now().strftime("%Y-%m-%d")
-delivery_date     = datetime.now() + timedelta(days=5)
-want_pick_up_date = datetime.now() + timedelta(days=5)
+delivery_date     = (datetime.now() + timedelta(days=5))
+want_pick_up_date = (datetime.now() + timedelta(days=5))
 
 @freeze_time(Today_date)
 class OrderCreateListTestCase(APITestCase):
@@ -152,8 +152,6 @@ class OrderCreateListTestCase(APITestCase):
             count             = 1
         )
         
-        
-        
     def test_list_order(self):
         
         # #for checking
@@ -280,7 +278,6 @@ class OrderCreateListTestCase(APITestCase):
         
         #auth
         jwt_access = str(RefreshToken.for_user(self.user).access_token)
-        print(jwt_access)
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {jwt_access}')
     
         data = {
@@ -289,7 +286,7 @@ class OrderCreateListTestCase(APITestCase):
     "customer_name": "tester",
     "contact": "010-0000-0000",
     "delivery_location": "test_location",
-    "delivery_date": "2022-10-10",
+    "delivery_date": delivery_date.strftime("%Y-%m-%d"),
     "purpose" : "testasd",
     "orderedproducts": 
         [
@@ -310,7 +307,6 @@ class OrderCreateListTestCase(APITestCase):
         
         self.assertEqual(response.status_code,status.HTTP_201_CREATED)
 
-    
     def test_create_package_order_fail_by_unauth(self):
         
         data = {
@@ -319,7 +315,7 @@ class OrderCreateListTestCase(APITestCase):
     "customer_name": "tester",
     "contact": "010-0000-0000",
     "delivery_location": "test_location",
-    "delivery_date": "2022-10-10",
+    "delivery_date": delivery_date.strftime("%Y-%m-%d"),
     "purpose" : "testasd",
     "orderedproducts": 
         [
@@ -340,214 +336,685 @@ class OrderCreateListTestCase(APITestCase):
         self.assertEqual(response.status_code,status.HTTP_401_UNAUTHORIZED)
         
 
+@freeze_time(Today_date)
+class OrderDetailTestCase(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        
+        #Product
+        setup_product_list = [
+            Product(
+                id                   = 1,
+                category             = 'bread',
+                product_name         = 'test_product1',
+                price                = 10000,
+                optional_description = 'test_optional_description1',
+                description          = 'test_description',
+                is_active            = True,
+                tag                  = None,
+                sellout              = False,
+            ),
+            Product(
+                id                   = 2,
+                category             = 'bread',
+                product_name         = 'test_product2',
+                price                = 10000,
+                optional_description = 'test_optional_description2',
+                description          = 'test_description',
+                is_active            = True,
+                tag                  = None,
+                sellout              = False,
+            ),
+            Product(
+                id                   = 3,
+                category             = 'cake',
+                product_name         = 'test_product3',
+                price                = 10000,
+                optional_description = 'test_optional_description3',
+                description          = 'test_description',
+                is_active            = True,
+                tag                  = None,
+                sellout              = False,
+            ),
+        ]        
+        
+        Product.objects.bulk_create(setup_product_list)
+        
+        #user
+        cls.user = User.objects.create(
+            id                = 1,
+            nickname          = 'test_nickname',
+            email             = 'test_email@test.com',
+            login_type        = "KakaoLogin",
+            profile_image_url = 'test_profile_image_url@test.com',
+            kakao_id          = 11
+        )
+        
+        #not_create_user_for_permission_check
+        cls.user2 = User.objects.create(
+            id                = 2,
+            nickname          = 'test_nickname2',
+            email             = 'test_email2@test.com',
+            login_type        = "KakaoLogin",
+            profile_image_url = 'test_profile_image_url@test.com2',
+            kakao_id          = 12
+        )
+        
+        #admin_user
+        cls.admin_user = User.objects.create(
+            id                = 3,
+            nickname          = 'test_admin_nickname',
+            email             = 'test_admin_email@test.com',
+            login_type        = "KakaoLogin",
+            profile_image_url = 'test_admin_profile_image_url@test.com',
+            kakao_id          = 12,
+            is_staff          = True
+        )
+        
+        #packagae:order
+        cls.order_package = Order.objects.create(
+            user                   = cls.user,
+            id                     = 1,
+            title                  = "test_order_package",
+            type                   = "package",
+            customer_name          = "test_customer",
+            contact                = "000-0000-0000",
+            additional_explanation = "test_explanation",
+        )
+        cls.packageorder = PackageOrder.objects.create(
+            id                = 1 ,
+            order             = cls.order_package,
+            delivery_location = 'test_location',
+            delivery_date     = delivery_date,
+            is_packaging      = "test_packaging",
+            purpose           = "_test"
+        )
+        
+        OrderedProduct.objects.bulk_create(
+            [
+                OrderedProduct(
+                    id            = 1,
+                    package_order = cls.packageorder,
+                    product_id    = 1,
+                    buying        = True
+                ),
+                OrderedProduct(
+                    id            = 2,
+                    package_order = cls.packageorder,
+                    product_id    = 2,
+                    buying        = True
+                ),
+            ]
+        )
+        
+        #packagae:order_status_confirmed
+        cls.order_package_confirmed = Order.objects.create(
+            user                   = cls.user,
+            id                     = 2,
+            title                  = "test_order_package",
+            type                   = "package",
+            customer_name          = "test_customer",
+            contact                = "000-0000-0000",
+            additional_explanation = "test_explanation",
+            status                 = 'confirmed'
+        )
+        cls.packageorder_confirmed = PackageOrder.objects.create(
+            id                = 2 ,
+            order             = cls.order_package_confirmed,
+            delivery_location = 'test_location',
+            delivery_date     = delivery_date,
+            is_packaging      = "test_packaging",
+            purpose           = "_test"
+        )
+        
+        OrderedProduct.objects.bulk_create(
+            [
+                OrderedProduct(
+                    id            = 3,
+                    package_order = cls.packageorder_confirmed,
+                    product_id    = 1,
+                    buying        = True
+                ),
+                OrderedProduct(
+                    id            = 4,
+                    package_order = cls.packageorder_confirmed,
+                    product_id    = 2,
+                    buying        = True
+                ),
+            ]
+        )
+        
+        #packagae:cafe
+        cls.order_cafe = Order.objects.create(
+            user                   = cls.user,
+            id                     = 3,
+            title                  = "test_order_cafe",
+            type                   = "cafe",
+            customer_name          = "test_customer",
+            contact                = "000-0000-0000",
+            additional_explanation = "test_explanation",
+        )
+        cls.cafeorder = CafeOrder.objects.create(
+            id                         = 1 ,
+            order                      = cls.order_cafe,
+            cafename                   = 'test_cafename',
+            cafe_owner_name            = 'test_owner',
+            corporate_registration_num = "test_regi_num",
+            cafe_location              = "test_location",
+            product_explanation        = "test_product_explanation"
+        )
+        
+        #packagae:cake
+        cls.order_cake = Order.objects.create(
+            user                   = cls.user,
+            id                     = 4,
+            title                  = "test_order_cake",
+            type                   = "cake",
+            customer_name          ="test_customer",
+            contact                = "000-0000-0000",
+            additional_explanation = "test_explanation",
+        )
+        cls.cakeorder = CakeOrder.objects.create(
+            id                = 1 ,
+            order             = cls.order_cake,
+            want_pick_up_date = want_pick_up_date,
+            product_id        = 3,
+            count             = 1
+        )
+        
+    ##retrieve
+    def test_retrieve_order_success_as_admin_user(self):
+        
+        #auth
+        jwt_access = str(RefreshToken.for_user(self.admin_user).access_token)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {jwt_access}')
+    
+        data = {
+            'id'                    : 1,
+            'type'                  : 'package',
+            'title'                 : 'test_order_package',
+            'customer_name'         : 'test_customer',
+            'contact'               : '000-0000-0000',
+            'status'                : 'not_confirmed',
+            'additional_explanation': 'test_explanation',
+            'created_at'            : f'{Today_date}T00:00:00',
+            'updated_at'            : f'{Today_date}T00:00:00',
+            'is_staff'              : True,
+            'packageorders': {
+                'id'               : 1,
+                'delivery_location': 'test_location',
+                'delivery_date'    : delivery_date.strftime("%Y-%m-%d"),
+                'is_packaging'     : 'test_packaging',
+                'purpose'          : '_test',
+                'orderedproducts'  : [
+                    {
+                        'product_id'  : 1,
+                        'buying'      : True,
+                        'product_name': 'test_product1'
+                        },
+                    {
+                        'product_id'  : 2,
+                        'buying'      : True, 
+                        'product_name': 'test_product2'
+                        }
+                    ]
+                },
+            }
+        
+        response = self.client.get('/orders/1')
+        
+        self.assertEqual(response.status_code,status.HTTP_200_OK)
+        self.assertEqual(response.data,data)
 
-# @freeze_time(Today_date)
-# class OrderDetailTestCase(APITestCase):
-#     @classmethod
-#     def setUpTestData(cls):
+    def test_retrieve_order_fail_as_not_create_user(self):
         
-#         #Product
-#         setup_product_list = [
-#             Product(
-#                 id                   = 1,
-#                 category             = 'bread',
-#                 product_name         = 'test_product1',
-#                 price                = 10000,
-#                 optional_description = 'test_optional_description1',
-#                 description          = 'test_description',
-#                 is_active            = True,
-#                 tag                  = None,
-#                 sellout              = False,
-#             ),
-#             Product(
-#                 id                   = 2,
-#                 category             = 'bread',
-#                 product_name         = 'test_product2',
-#                 price                = 10000,
-#                 optional_description = 'test_optional_description2',
-#                 description          = 'test_description',
-#                 is_active            = True,
-#                 tag                  = None,
-#                 sellout              = False,
-#             ),
-#             Product(
-#                 id                   = 3,
-#                 category             = 'cake',
-#                 product_name         = 'test_product3',
-#                 price                = 10000,
-#                 optional_description = 'test_optional_description3',
-#                 description          = 'test_description',
-#                 is_active            = True,
-#                 tag                  = None,
-#                 sellout              = False,
-#             ),
-#         ]        
+        #auth
+        jwt_access = str(RefreshToken.for_user(self.user2).access_token)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {jwt_access}')
+
+        data = {
+            'id'                    : 1,
+            'type'                  : 'package',
+            'title'                 : 'test_order_package',
+            'customer_name'         : 'test_customer',
+            'contact'               : '000-0000-0000',
+            'status'                : 'not_confirmed',
+            'additional_explanation': 'test_explanation',
+            'created_at'            : f'{Today_date}T00:00:00',
+            'updated_at'            : f'{Today_date}T00:00:00',
+            'is_staff'              : True,
+            'packageorders': {
+                'id'               : 1,
+                'delivery_location': 'test_location',
+                'delivery_date'    : delivery_date.strftime("%Y-%m-%d"),
+                'is_packaging'     : 'test_packaging',
+                'purpose'          : '_test',
+                'orderedproducts'  : [
+                    {
+                        'product_id'  : 1,
+                        'buying'      : True,
+                        'product_name': 'test_product1'
+                        },
+                    {
+                        'product_id'  : 2,
+                        'buying'      : True, 
+                        'product_name': 'test_product2'
+                        }
+                    ]
+                },
+            }
         
-#         Product.objects.bulk_create(setup_product_list)
+        response = self.client.get('/orders/1')
         
-#         #user
-#         cls.user = User.objects.create(
-#             id                = 1,
-#             nickname          = 'test_nickname',
-#             email             = 'test_email@test.com',
-#             login_type        = "KakaoLogin",
-#             profile_image_url = 'test_profile_image_url@test.com',
-#             kakao_id          = 11
-#         )
+        self.assertEqual(response.status_code,status.HTTP_403_FORBIDDEN)
+
+    def test_retrieve_order_fail_as_unauth(self):
+        pass
+    
+        data = {
+            'id'                    : 1,
+            'type'                  : 'package',
+            'title'                 : 'test_order_package',
+            'customer_name'         : 'test_customer',
+            'contact'               : '000-0000-0000',
+            'status'                : 'not_confirmed',
+            'additional_explanation': 'test_explanation',
+            'created_at'            : f'{Today_date}T00:00:00',
+            'updated_at'            : f'{Today_date}T00:00:00',
+            'is_staff'              : True,
+            'packageorders': {
+                'id'               : 1,
+                'delivery_location': 'test_location',
+                'delivery_date'    : delivery_date.strftime("%Y-%m-%d"),
+                'is_packaging'     : 'test_packaging',
+                'purpose'          : '_test',
+                'orderedproducts'  : [
+                    {
+                        'product_id'  : 1,
+                        'buying'      : True,
+                        'product_name': 'test_product1'
+                        },
+                    {
+                        'product_id'  : 2,
+                        'buying'      : True, 
+                        'product_name': 'test_product2'
+                        }
+                    ]
+                },
+            }
         
-#         #not_create_user_for_permission_check
-#         cls.user2 = User.objects.create(
-#             id                = 2,
-#             nickname          = 'test_nickname2',
-#             email             = 'test_email2@test.com',
-#             login_type        = "KakaoLogin",
-#             profile_image_url = 'test_profile_image_url@test.com2',
-#             kakao_id          = 12
-#         )
+        response = self.client.get('/orders/1')
         
-#         #admin_user
-#         cls.admin_user = User.objects.create(
-#             id                = 2,
-#             nickname          = 'test_admin_nickname',
-#             email             = 'test_admin_email@test.com',
-#             login_type        = "KakaoLogin",
-#             profile_image_url = 'test_admin_profile_image_url@test.com',
-#             kakao_id          = 12,
-#             is_staff          = True
-#         )
+        self.assertEqual(response.status_code,status.HTTP_401_UNAUTHORIZED)
+    
+    def test_retrieve_order_success_as_create_user(self):
         
-#         #packagae:order
-#         cls.order_package = Order.objects.create(
-#             user                   = cls.user,
-#             id                     = 1,
-#             title                  = "test_order_package",
-#             type                   = "package",
-#             customer_name          = "test_customer",
-#             contact                = "000-0000-0000",
-#             additional_explanation = "test_explanation",
-#         )
-#         cls.packageorder = PackageOrder.objects.create(
-#             id                = 1 ,
-#             order             = cls.order_package,
-#             delivery_location = 'test_location',
-#             delivery_date     = delivery_date,
-#             is_packaging      = "test_packaging",
-#             purpose           = "_test"
-#         )
+        #auth
+        jwt_access = str(RefreshToken.for_user(self.user).access_token)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {jwt_access}')
+    
+
+        data = {
+            'id'                    : 1,
+            'type'                  : 'package',
+            'title'                 : 'test_order_package',
+            'customer_name'         : 'test_customer',
+            'contact'               : '000-0000-0000',
+            'status'                : 'not_confirmed',
+            'additional_explanation': 'test_explanation',
+            'created_at'            : f'{Today_date}T00:00:00',
+            'updated_at'            : f'{Today_date}T00:00:00',
+            'is_staff'              : False,
+            'packageorders': {
+                'id'               : 1,
+                'delivery_location': 'test_location',
+                'delivery_date'    : delivery_date.strftime("%Y-%m-%d"),
+                'is_packaging'     : 'test_packaging',
+                'purpose'          : '_test',
+                'orderedproducts'  : [
+                    {
+                        'product_id'  : 1,
+                        'buying'      : True,
+                        'product_name': 'test_product1'
+                        },
+                    {
+                        'product_id'  : 2,
+                        'buying'      : True, 
+                        'product_name': 'test_product2'
+                        }
+                    ]
+                },
+            }
         
-#         OrderedProduct.objects.bulk_create(
-#             [
-#                 OrderedProduct(
-#                     id            = 1,
-#                     package_order = cls.packageorder,
-#                     product_id    = 1,
-#                     buying        = True
-#                 ),
-#                 OrderedProduct(
-#                     id            = 2,
-#                     package_order = cls.packageorder,
-#                     product_id    = 2,
-#                     buying        = True
-#                 ),
-#             ]
-#         )
+        response = self.client.get('/orders/1')
         
-#         #packagae:cafe
-#         cls.order_cafe = Order.objects.create(
-#             user                   = cls.user,
-#             id                     = 2,
-#             title                  = "test_order_cafe",
-#             type                   = "cafe",
-#             customer_name          = "test_customer",
-#             contact                = "000-0000-0000",
-#             additional_explanation = "test_explanation",
-#         )
-#         cls.cafeorder = CafeOrder.objects.create(
-#             id                         = 1 ,
-#             order                      = cls.order_cafe,
-#             cafename                   = 'test_cafename',
-#             cafe_owner_name            = 'test_owner',
-#             corporate_registration_num = "test_regi_num",
-#             cafe_location              = "test_location",
-#             product_explanation        = "test_product_explanation"
-#         )
-        
-#         #packagae:cake
-#         cls.order_cake = Order.objects.create(
-#             user                   = cls.user,
-#             id                     = 3,
-#             title                  = "test_order_cake",
-#             type                   = "cake",
-#             customer_name          ="test_customer",
-#             contact                = "000-0000-0000",
-#             additional_explanation = "test_explanation",
-#         )
-#         cls.cakeorder = CakeOrder.objects.create(
-#             id                = 1 ,
-#             order             = cls.order_cake,
-#             want_pick_up_date = want_pick_up_date,
-#             product_id        = 3,
-#             count             = 1
-#         )
-        
-#         #package:cake_status_confirmed
-#         cls.order_cake_confirmed = Order.objects.create(
-#             user                   = cls.user,
-#             id                     = 4,
-#             title                  = "test_order_cake",
-#             type                   = "cake",
-#             customer_name          ="test_customer",
-#             contact                = "000-0000-0000",
-#             additional_explanation = "test_explanation",
-#             status                 = 'confirmed'
-#         )
-#         cls.cakeorder_confirmed = CakeOrder.objects.create(
-#             id                = 1 ,
-#             order             = cls.order_cake,
-#             want_pick_up_date = want_pick_up_date,
-#             product_id        = 3,
-#             count             = 1
-#         )
+        self.assertEqual(response.status_code,status.HTTP_200_OK)
+        self.assertEqual(response.data,data)
         
     
-#     #retrieve
-#     def test_retrieve_order_success_as_admin_user(self):
-#         pass
+    ##update
+    def test_update_order_success_as_admin_user(self):
+        
+        #auth
+        jwt_access = str(RefreshToken.for_user(self.admin_user).access_token)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {jwt_access}')
+        
+        body_data = {
+            "title": "updated_test_package",
+            "type": "package",
+            "customer_name": "updated_tester",
+            "contact": "000-0000-0000",
+            "delivery_location": "test_location",
+            'additional_explanation': 'updated_explanation',
+            "delivery_date": delivery_date.strftime("%Y-%m-%d"),
+            "purpose" : "updated_test",
+            "orderedproducts": 
+                [
+                {
+                    "product_id":1,
+                    "buying":"True"
+                },
+                {
+                    "product_id":2,
+                    "buying":"True"
+                }
+            ]
+}
+        response = self.client.patch('/orders/1',data=json.dumps(body_data),content_type='application/json')
+        
+        updated_data = {
+            'id'                    : 1,
+            'type'                  : 'package',
+            'title'                 : 'updated_test_package',
+            'customer_name'         : 'updated_tester',
+            'contact'               : '000-0000-0000',
+            'status'                : 'not_confirmed',
+            'additional_explanation': 'updated_explanation',
+            'created_at'            : f'{Today_date}T00:00:00',
+            'updated_at'            : f'{Today_date}T00:00:00',
+            'packageorders': {
+                'id'               : 1,
+                'delivery_location': 'test_location',
+                'delivery_date'    : delivery_date.strftime("%Y-%m-%d"),
+                'is_packaging'     : 'test_packaging',
+                'purpose'          : 'updated_test',
+                'orderedproducts'  : [
+                    {
+                        'product_id'  : 1,
+                        'buying'      : True,
+                        'product_name': 'test_product1'
+                        },
+                    {
+                        'product_id'  : 2,
+                        'buying'      : True, 
+                        'product_name': 'test_product2'
+                        }
+                    ]
+                },
+            }
+
+        
+        self.assertEqual(response.status_code,status.HTTP_200_OK)
+        self.assertEqual(response.json(),updated_data)
+
+    def test_update_order_fail_as_not_create_user(self):
+        
+        #auth
+        jwt_access = str(RefreshToken.for_user(self.user2).access_token)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {jwt_access}')
+        
+        body_data = {
+            "title": "updated_test_package",
+            "type": "package",
+            "customer_name": "updated_tester",
+            "contact": "000-0000-0000",
+            "delivery_location": "test_location",
+            'additional_explanation': 'updated_explanation',
+            "delivery_date": delivery_date.strftime("%Y-%m-%d"),
+            "purpose" : "updated_test",
+            "orderedproducts": 
+                [
+                {
+                    "product_id":1,
+                    "buying":"True"
+                },
+                {
+                    "product_id":2,
+                    "buying":"True"
+                }
+            ]
+}
+        response = self.client.patch('/orders/1',data=json.dumps(body_data),content_type='application/json')
+        
+        self.assertEqual(response.status_code,status.HTTP_403_FORBIDDEN)
+
+    def test_update_order_fail_as_unauth(self):
+        
+        body_data = {
+            "title": "updated_test_package",
+            "type": "package",
+            "customer_name": "updated_tester",
+            "contact": "000-0000-0000",
+            "delivery_location": "test_location",
+            'additional_explanation': 'updated_explanation',
+            "delivery_date": delivery_date.strftime("%Y-%m-%d"),
+            "purpose" : "updated_test",
+            "orderedproducts": 
+                [
+                {
+                    "product_id":1,
+                    "buying":"True"
+                },
+                {
+                    "product_id":2,
+                    "buying":"True"
+                }
+            ]
+}
+        response = self.client.patch('/orders/1',data=json.dumps(body_data),content_type='application/json')    
     
-#     def test_retrieve_order_fail_as_not_create_user(self):
-#         pass
+        self.assertEqual(response.status_code,status.HTTP_401_UNAUTHORIZED)
     
-#     def test_retrieve_order_success_as_create_user(self):
-#         pass
-    
-    
-    
-#     #update
-#     def test_update_order_success_as_admin_user(self):
-#         pass
-    
-#     def test_update_order_fail_as_not_create_user(self):
-#         pass
-    
-#     def test_update_order_success_as_create_user(self):
-#         pass
-    
-#     def test_update_order_fail_as_create_user_for_confirmed_order(self):
-#         pass
+    def test_update_order_success_as_create_user(self):
+        
+        #auth
+        jwt_access = str(RefreshToken.for_user(self.user).access_token)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {jwt_access}')
     
     
+        body_data = {
+            "title": "updated_test_package",
+            "type": "package",
+            "customer_name": "updated_tester",
+            "contact": "000-0000-0000",
+            "delivery_location": "test_location",
+            'additional_explanation': 'updated_explanation',
+            "delivery_date": delivery_date.strftime("%Y-%m-%d"),
+            "purpose" : "updated_test",
+            "orderedproducts": 
+                [
+                {
+                    "product_id":1,
+                    "buying":"True"
+                },
+                {
+                    "product_id":2,
+                    "buying":"True"
+                }
+            ]
+}
+        response = self.client.patch('/orders/1',data=json.dumps(body_data),content_type='application/json')
+        
+        updated_data = {
+            'id'                    : 1,
+            'type'                  : 'package',
+            'title'                 : 'updated_test_package',
+            'customer_name'         : 'updated_tester',
+            'contact'               : '000-0000-0000',
+            'status'                : 'not_confirmed',
+            'additional_explanation': 'updated_explanation',
+            'created_at'            : f'{Today_date}T00:00:00',
+            'updated_at'            : f'{Today_date}T00:00:00',
+            'packageorders': {
+                'id'               : 1,
+                'delivery_location': 'test_location',
+                'delivery_date'    : delivery_date.strftime("%Y-%m-%d"),
+                'is_packaging'     : 'test_packaging',
+                'purpose'          : 'updated_test',
+                'orderedproducts'  : [
+                    {
+                        'product_id'  : 1,
+                        'buying'      : True,
+                        'product_name': 'test_product1'
+                        },
+                    {
+                        'product_id'  : 2,
+                        'buying'      : True, 
+                        'product_name': 'test_product2'
+                        }
+                    ]
+                },
+            }
+
+        
+        self.assertEqual(response.status_code,status.HTTP_200_OK)
+        self.assertEqual(response.json(),updated_data)
+        
+    def test_update_order_success_about_orderdproducts_as_create_user(self):
+        
+        #auth
+        jwt_access = str(RefreshToken.for_user(self.user).access_token)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {jwt_access}')
     
     
-#     #delete
-#     def test_delete_order_success_as_admin_user(self):
-#         pass
+        body_data = {
+            "title": "updated_test_package",
+            "type": "package",
+            "customer_name": "updated_tester",
+            "contact": "000-0000-0000",
+            "delivery_location": "test_location",
+            'additional_explanation': 'updated_explanation',
+            "delivery_date": delivery_date.strftime("%Y-%m-%d"),
+            "purpose" : "updated_test",
+            "orderedproducts": 
+                [
+                {
+                    "product_id":1,
+                    "buying":"True"
+                },
+                # {
+                #     "product_id":2,
+                #     "buying":"True"
+                # }
+            ]
+}
+        response = self.client.patch('/orders/1',data=json.dumps(body_data),content_type='application/json')
+        
+        updated_data = {
+            'id'                    : 1,
+            'type'                  : 'package',
+            'title'                 : 'updated_test_package',
+            'customer_name'         : 'updated_tester',
+            'contact'               : '000-0000-0000',
+            'status'                : 'not_confirmed',
+            'additional_explanation': 'updated_explanation',
+            'created_at'            : f'{Today_date}T00:00:00',
+            'updated_at'            : f'{Today_date}T00:00:00',
+            'packageorders': {
+                'id'               : 1,
+                'delivery_location': 'test_location',
+                'delivery_date'    : delivery_date.strftime("%Y-%m-%d"),
+                'is_packaging'     : 'test_packaging',
+                'purpose'          : 'updated_test',
+                'orderedproducts'  : [
+                    {
+                        'product_id'  : 1,
+                        'buying'      : True,
+                        'product_name': 'test_product1'
+                        },
+                    # {
+                    #     'product_id'  : 2,
+                    #     'buying'      : True, 
+                    #     'product_name': 'test_product2'
+                    #     }
+                    ]
+                },
+            }
+
+        
+        self.assertEqual(response.status_code,status.HTTP_200_OK)
+        self.assertEqual(response.json(),updated_data)    
+        
+    def test_update_confirmed_order_fail_as_create_user(self):
+        
+        #auth
+        jwt_access = str(RefreshToken.for_user(self.user).access_token)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {jwt_access}')
     
-#     def test_delete_order_fail_as_not_create_user(self):
-#         pass
+        body_data = {
+            "title": "updated_test_package",
+            "type": "package",
+            "customer_name": "updated_tester",
+            "contact": "000-0000-0000",
+            "delivery_location": "test_location",
+            'additional_explanation': 'updated_explanation',
+            "delivery_date": delivery_date.strftime("%Y-%m-%d"),
+            "purpose" : "updated_test",
+            "orderedproducts": 
+                [
+                {
+                    "product_id":1,
+                    "buying":"True"
+                },
+                {
+                    "product_id":2,
+                    "buying":"True"
+                }
+            ]
+}
+        response = self.client.patch('/orders/2',data=json.dumps(body_data),content_type='application/json')
     
-#     def test_delete_order_success_as_create_user(self):
-#         pass
+        self.assertEqual(response.status_code,status.HTTP_403_FORBIDDEN)
+
+        
+    ##delete
+    def test_delete_order_success_as_admin_user(self):
+        
+        #auth
+        jwt_access = str(RefreshToken.for_user(self.admin_user).access_token)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {jwt_access}')
+        
+        response = self.client.delete('/orders/1')
+        self.assertEqual(response.status_code,status.HTTP_204_NO_CONTENT)
+        
+    def test_delete_order_fail_as_not_create_user(self):
+        
+        #auth
+        jwt_access = str(RefreshToken.for_user(self.user2).access_token)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {jwt_access}')
+        
+        response = self.client.delete('/orders/1')
+        self.assertEqual(response.status_code,status.HTTP_403_FORBIDDEN)
     
-#     def test_delete_order_fail_as_create_user_for_confirmed_order(self):
-#         pass
+    def test_delete_order_fail_as_unauth(self):
+        
+        response = self.client.delete('/orders/1')
+        self.assertEqual(response.status_code,status.HTTP_401_UNAUTHORIZED)
+        
+    def test_delete_order_success_as_create_user(self):
+
+        #auth
+        jwt_access = str(RefreshToken.for_user(self.user).access_token)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {jwt_access}')
+        
+        response = self.client.delete('/orders/1')
+        self.assertEqual(response.status_code,status.HTTP_204_NO_CONTENT)
     
+    def test_delete_order_fail_as_create_user_for_confirmed_order(self):
+        
+        #auth
+        jwt_access = str(RefreshToken.for_user(self.user).access_token)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {jwt_access}')
+        
+        response = self.client.delete('/orders/2')
+        self.assertEqual(response.status_code,status.HTTP_403_FORBIDDEN)

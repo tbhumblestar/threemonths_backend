@@ -65,13 +65,12 @@ class PackageOrderSerializer(serializers.ModelSerializer):
                 new_products_id_set.add(products_data['product_id'])
             
             
-            delete_id_set = existing_products_id_set - new_products_id_set
             
+            
+            delete_id_set = existing_products_id_set - new_products_id_set
             OrderedProduct.objects.filter(package_order=instance,product_id__in=delete_id_set).delete()
-           
             
             add_id_set = new_products_id_set - existing_products_id_set
-            
             for id in add_id_set:
                 OrderedProduct.objects.create(
                     package_order = instance,
