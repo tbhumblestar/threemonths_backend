@@ -7,7 +7,7 @@ from drf_spectacular.utils   import extend_schema, OpenApiParameter, OpenApiExam
 from .models         import Product, IndependentImage
 from .serializers    import IndependentImageSerializer, ProductSerializer
 from core.filters    import IndependentImageFilter, ProductFilter
-from core.decorators import query_debugger
+
 
 
 class IndependentImageListView(generics.ListAPIView):
