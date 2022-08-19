@@ -3,8 +3,27 @@ from rest_framework import permissions
 class IsAdminOrReadOnly(permissions.BasePermission):
     def has_permission(self,request,view):
         
-        admin_permission = bool(request.user and request.user.is_staff)
-        return request.method == 'GET' or admin_permission
+        is_staff = bool(request.user and request.user.is_staff)
+        return request.method == 'GET' or is_staff
+    
+
+class IsAdminOrIsWriterOrForbidden(permissions.BasePermission):
+    
+    #인증(유저Login 돼있는지 확인)
+    def has_permission(self,request,view):
+        
+        is_authenticated = bool(request.user and request.user.is_authenticated)
+        
+        return is_authenticated and request.method != 'PUT'
+    
+    #
+    def has_object_permission(self,request,view,obj):
+        
+        is_staff = bool(request.user.is_staff)
+        is_writer = bool(request.user == obj.user)
+
+        return is_staff or is_writer
+
 
 
 class OrderPermission(permissions.BasePermission):
