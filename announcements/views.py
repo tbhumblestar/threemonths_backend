@@ -6,7 +6,7 @@ from core.permissions          import IsAdminOrReadOnly,IsAdminOrIsWriterOrForbi
 from announcements.models      import FAQ, QnA, QnAComment
 from announcements.serializers import FAQSerializer, QnASerializer, QnACommentSerializer
 
-
+@extend_schema(methods=['Post','PUT','patch','Delete'], exclude=True)
 class FAQView(generics.ListCreateAPIView):
     permission_classes = [IsAdminOrReadOnly]
     queryset         = FAQ.objects.all()
@@ -16,7 +16,7 @@ class FAQView(generics.ListCreateAPIView):
         user = self.request.user
         serializer.save(user = self.request.user)
 
-
+@extend_schema(methods=['Post','PUT','patch','Delete'], exclude=True)
 class FAQDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAdminOrReadOnly]
     queryset         = QnA.objects.all()
@@ -33,7 +33,8 @@ class QnAView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         user = self.request.user
         serializer.save(user = self.request.user)
-        
+
+@extend_schema(methods=['PUT'], exclude=True)
 class QnADetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAdminOrIsWriterOrForbidden]
     queryset           = QnA.objects.all()
@@ -42,7 +43,7 @@ class QnADetailView(generics.RetrieveUpdateDestroyAPIView):
     lookup_field       = 'id'
     
     
-
+@extend_schema(methods=['GET','PUT','patch','Delete'], exclude=True)
 class QnACommentView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class   = QnACommentSerializer
@@ -54,13 +55,10 @@ class QnACommentView(generics.ListCreateAPIView):
         user = self.request.user
         serializer.save(user = self.request.user,qna_id = qna_id)
 
-
+@extend_schema(methods=['GET','PUT','patch'], exclude=True)
 class QnACommenDetailView(generics.RetrieveDestroyAPIView):
     permission_classes = [IsAdminOrIsWriterOrForbidden]
     serializer_class   = QnACommentSerializer
     queryset           = QnAComment.objects.all()
     lookup_url_kwarg   = 'comment_id'
     lookup_field       = 'id'
-
-
-    
