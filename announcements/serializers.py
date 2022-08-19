@@ -6,16 +6,19 @@ class FAQSerializer(ModelSerializer):
     
     class Meta:
         model  = FAQ
-        fields = ['question','awnser']
+        fields = ['id','question','awnser']
         
-class QnASerializer(ModelSerializer):
-    
-    class Meta:
-        model  = QnA
-        fields = ['title','content']
         
 class QnACommentSerializer(ModelSerializer):
     
     class Meta:
         model  = QnAComment
-        fields = ['content']
+        fields = ['id','content']
+        
+        
+class QnASerializer(ModelSerializer):
+    qna_comments = QnACommentSerializer(many=True,read_only=True)
+    
+    class Meta:
+        model  = QnA
+        fields = ['id','title','content','qna_comments']

@@ -31,7 +31,7 @@ class QnA(TimeStampedModel):
 
 class QnAComment(TimeStampedModel):
     user    = models.ForeignKey(User,on_delete=models.CASCADE)
-    q_and_a = models.ForeignKey('QnA',on_delete=models.CASCADE,related_name='q_and_a_comments')
+    qna     = models.ForeignKey('QnA',on_delete=models.CASCADE,related_name='qna_comments')
     content = models.TextField()
     
     class Meta:

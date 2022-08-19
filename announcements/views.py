@@ -26,7 +26,7 @@ class FAQDetailView(generics.RetrieveUpdateDestroyAPIView):
     
     
 class QnAView(generics.ListCreateAPIView):
-    permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [IsAuthenticated]
     queryset           = QnA.objects.all()
     serializer_class   = QnASerializer
     
@@ -38,22 +38,24 @@ class QnADetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAdminOrIsWriterOrForbidden]
     queryset           = QnA.objects.all()
     serializer_class   = QnASerializer
-    lookup_url_kwarg   = 'q_and_a_id'
+    lookup_url_kwarg   = 'qna_id'
     lookup_field       = 'id'
     
     
 
-class QnACommentView(generics.CreateAPIView):
+class QnACommentView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class   = QnACommentSerializer
     queryset           = QnAComment.objects.all()
     
     def perform_create(self, serializer):
+        qna_id = self.kwargs.get('qna_id')
+        print(qna_id)
         user = self.request.user
-        serializer.save(user = self.request.user)
+        serializer.save(user = self.request.user,qna_id = qna_id)
 
 
-class QnACommenDetailView(generics.DestroyAPIView):
+class QnACommenDetailView(generics.RetrieveDestroyAPIView):
     permission_classes = [IsAdminOrIsWriterOrForbidden]
     serializer_class   = QnACommentSerializer
     queryset           = QnAComment.objects.all()
