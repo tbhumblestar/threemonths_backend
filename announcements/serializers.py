@@ -1,4 +1,4 @@
-from rest_framework.serializers import Serializer,ModelSerializer
+from rest_framework.serializers import ModelSerializer
 from announcements.models       import FAQ, QnA, QnAComment
 
 
@@ -6,14 +6,14 @@ class FAQSerializer(ModelSerializer):
     
     class Meta:
         model  = FAQ
-        fields = ['id','question','awnser']
+        fields = ['id','question','answer','created_at']
         
         
 class QnACommentSerializer(ModelSerializer):
     
     class Meta:
         model  = QnAComment
-        fields = ['id','content']
+        fields = ['id','content','created_at']
         
         
 class QnASerializer(ModelSerializer):
@@ -21,4 +21,4 @@ class QnASerializer(ModelSerializer):
     
     class Meta:
         model  = QnA
-        fields = ['id','title','content','qna_comments']
+        fields = ['id','title','content','qna_comments','created_at']

@@ -173,7 +173,7 @@ AUTH_USER_MODEL = 'users.User'
 SPECTACULAR_SETTINGS = {
     'TITLE': 'ThreeMonth API',
     'DESCRIPTION': '서울 빵 다 팔거야!!',
-    'VERSION': '1차 배포',
+    'VERSION': '2.0',
     'SERVE_INCLUDE_SCHEMA': False,
     # OTHER SETTINGS
     'SWAGGER_UI_SETTINGS': {

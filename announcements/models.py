@@ -8,7 +8,7 @@ User = get_user_model()
 class FAQ(TimeStampedModel):
     user     = models.ForeignKey(User,on_delete=models.CASCADE)
     question = models.TextField()
-    awnser   = models.TextField()
+    answer   = models.TextField()
     
     class Meta:
         db_table = 'FAQs'
