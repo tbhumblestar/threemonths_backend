@@ -4,9 +4,9 @@ from rest_framework          import generics
 from django_filters          import rest_framework as filters
 from drf_spectacular.utils   import extend_schema, OpenApiParameter, OpenApiExample, OpenApiTypes
 
-from .models         import Product, IndependentImage
-from .serializers    import IndependentImageSerializer, ProductSerializer
-from core.filters    import IndependentImageFilter, ProductFilter
+from .models             import Product, IndependentImage
+from .serializers       import IndependentImageSerializer, ProductSerializer
+from core.filters       import IndependentImageFilter, ProductFilter
 
 
 

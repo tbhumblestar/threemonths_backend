@@ -1,4 +1,5 @@
 from django.db           import models
+from pymysql import NULL
 from core.models         import TimeStampedModel
 from django.contrib.auth import get_user_model
 
@@ -41,17 +42,20 @@ class QnAComment(TimeStampedModel):
         return self.content
     
 
-# class Notice(TimeStampedModel):
-#     user     = models.ForeignKey(User,on_delete=models.CASCADE)
-#     title    = models.TextField()
-#     content  = models.TextField()
-#     img_src1 = models.CharField(max_length=500)
-#     img_src2 = models.CharField(max_length=500)
-#     img_src3 = models.CharField(max_length=500)
+class Notice(TimeStampedModel):
+    user         = models.ForeignKey(User,on_delete=models.CASCADE)
+    title        = models.TextField()
+    content      = models.TextField()
+    img1_url     = models.CharField(max_length=500)
+    img1_s3_path = models.CharField(max_length=500)
+    img2_url     = models.CharField(max_length=500,null=True)
+    img2_s3_path = models.CharField(max_length=500,null=True)
+    img3_url     = models.CharField(max_length=500,null=True)
+    img3_s3_path = models.CharField(max_length=500,null=True)
     
     
-#     class Meta:
-#         db_table = 'notices'
+    class Meta:
+        db_table = 'notices'
         
-#     def __str__(self):
-#         return self.title
+    def __str__(self):
+        return self.title

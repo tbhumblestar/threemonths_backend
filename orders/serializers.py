@@ -53,7 +53,6 @@ class PackageOrderSerializer(serializers.ModelSerializer):
         instance.save()
         
         
-        #orderedproducts를 어떻게 할지 체크??
         orderedproducts = validated_data.pop('orderedproducts',None)
         
         if orderedproducts:
@@ -147,10 +146,8 @@ class OrderSerializer(serializers.ModelSerializer):
         
     #없는 필드 제거. 굳이 list_serializer필드를 만들지 않아도 됨
     def to_representation(self, instance,*args,**kwargs):
-        ret= super().to_representation(instance)
-
-        #이건 안됨.. 왜?
-        #type_set = set(['package','cake','cafe']).remove(ret['type'])
+        
+        ret      = super().to_representation(instance)
         
         type_set = set(['package','cake','cafe'])
         type_set.remove(ret['type'])
@@ -159,8 +156,13 @@ class OrderSerializer(serializers.ModelSerializer):
             ret.pop(f"{order_type}orders")
 
         #for detail check   
-        
         if 'is_staff' in self.context:
             ret['is_staff'] = self.context.get('is_staff')
 
         return ret
+    
+class UserOrderSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model  = Order
+        fields = ['id','type','title']

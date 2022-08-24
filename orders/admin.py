@@ -9,3 +9,4 @@ admin.site.register(OrderedProduct)
 admin.site.register(CafeOrder)
 
 admin.site.register(CakeOrder)
+admin.site.register(Review)

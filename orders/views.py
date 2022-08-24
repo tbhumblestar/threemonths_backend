@@ -1,19 +1,22 @@
-from pymysql                 import NULL
-from django.db.models        import Prefetch
-from django.db               import transaction
-from rest_framework          import generics
-from rest_framework          import serializers
-from rest_framework.response import Response
-from rest_framework          import status
-from drf_spectacular.utils   import extend_schema, extend_schema_view, inline_serializer, OpenApiExample, PolymorphicProxySerializer
-from django_filters          import rest_framework as filters
+from django.db.models           import Prefetch
+from django.db                  import transaction
+from rest_framework             import generics
+from rest_framework.permissions import IsAuthenticated
+from rest_framework             import serializers
+from rest_framework.response    import Response
+from rest_framework             import status
+from drf_spectacular.utils      import extend_schema, extend_schema_view, inline_serializer, OpenApiExample, PolymorphicProxySerializer
+from django_filters             import rest_framework as filters
+from datetime                   import datetime, timedelta
+from django.db.models           import Case, When
+
 
 from .models          import Order, PackageOrder, OrderedProduct
-from .serializers     import OrderSerializer, CafeOrderSerializer, CakeOrderSerializer, PackageOrderSerializer
+from .serializers     import OrderSerializer, CafeOrderSerializer, CakeOrderSerializer, PackageOrderSerializer, UserOrderSerializer
 from core.filters     import OrderFilter
 from core.permissions import OrderDetailPermission, OrderPermission
 from core.schema      import OrderSerializerSchema
-from core.decorators  import query_debugger
+from core.cores       import query_debugger
 
 
 detail_serializer_by_type = {
@@ -153,14 +156,14 @@ class OrderView(generics.ListCreateAPIView):
                 "customer_name"          : "tester",
                 "contact"                : "010-0000-0000",
                 "status"                 : "not_confirmed",
-                "additional_explanation" : NULL,
+                "additional_explanation" : None,
                 "created_at"             : "2022-08-08T03:40:58.554790",
                 "updated_at"             : "2022-08-08T03:40:58.554824",
                 "packageorders"          : {
                     "id"                : 182,
                     "delivery_location" : "test_location",
                     "delivery_date"     : "2022-10-10",
-                    "is_packaging"      : NULL,
+                    "is_packaging"      : None,
                     "purpose"           : "testasdasdfgasdasdasdasdasdasdsad",
                     "orderedproducts"   : [
                         {
@@ -187,7 +190,7 @@ class OrderView(generics.ListCreateAPIView):
                 "customer_name"          : "tester",
                 "contact"                : "010-0000-0000",
                 "status"                 : "not_confirmed",
-                "additional_explanation" : NULL,
+                "additional_explanation" : None,
                 "created_at"             : "2022-08-08T04:12:07.160059",
                 "updated_at"             : "2022-08-08T04:12:07.160088",
                 "cakeorders"             : {
@@ -209,7 +212,7 @@ class OrderView(generics.ListCreateAPIView):
                 "customer_name"          : "tester",
                 "contact"                : "010-0000-0000",
                 "status"                 : "not_confirmed",
-                "additional_explanation" : NULL,
+                "additional_explanation" : None,
                 "created_at"             : "2022-08-08T04:13:11.779439",
                 "updated_at"             : "2022-08-08T04:13:11.779466",
                 "cafeorders"             : {
@@ -274,3 +277,29 @@ class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
 
         return Response(serializer.data)
 
+
+
+valid_order_date = datetime.now() - timedelta(days=60)
+
+
+class UserOrderListView(generics.ListAPIView):
+    
+    permission_classes = [IsAuthenticated]
+    serializer_class   = UserOrderSerializer
+    
+    """
+    -현재 요청을 보낸 유저의 & Type = Packge or Cake & review데이터가 없는 & 날짜(cake:want_pick_up_date / PackageOrder:delivery_Date)가 오늘보다 60일 이내
+    """
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Order.objects.\
+            filter(type__in=['cake','package']).\
+                select_related('cafeorders','cakeorders','reviews').\
+                annotate(dates=Case(
+                    When(type='package',then='packageorders__delivery_date'),
+                    When(type='cake',then='cakeorders__want_pick_up_date'))).\
+                        filter(
+                            dates__gte      = valid_order_date,
+                            reviews__isnull = True,
+                            user            = user)
+        return queryset

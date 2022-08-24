@@ -11,9 +11,14 @@ class FAQSerializer(serializers.ModelSerializer):
         
 class QnACommentSerializer(serializers.ModelSerializer):
     
+    user_nickname = serializers.SerializerMethodField()
+    
     class Meta:
         model  = QnAComment
-        fields = ['id','content','created_at']
+        fields = ['id','content','created_at','user_nickname']
+        
+    def get_user_nickname(self,object):
+        return object.user.nickname
         
         
 class QnASerializer(serializers.ModelSerializer):

@@ -27,7 +27,7 @@
 - select_related, prefetch_related, prefetch 등을 활용한 ORM 최적화
 - API testcode 구현
 - drf-spectacular를 활용한 API문서화(http://15.164.163.31:8001/api/schema/swagger-ui/)
-- AWS의 EC2, RDS, S3를 사용
+- AWS의 EC2, RDS, S3를 활용한 배포
 - Docker compose를 활용한 Nginx Reverse Proxy 서버 구축 및 이를 활용한 HTTPS 기능 구현
 
 

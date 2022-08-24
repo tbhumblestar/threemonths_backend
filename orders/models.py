@@ -30,7 +30,7 @@ class Order(TimeStampedModel):
         db_table = 'orders'
         
     def __str__(self):
-        return self.user.nickname + " : " + self.type + "/ created_at : " + str(self.created_at)
+        return str(self.id) + " : " + self.user.nickname + " : " + self.type + "/ created_at : " + str(self.created_at)
         
 
 class PackageOrder(TimeStampedModel):
@@ -73,3 +73,17 @@ class CakeOrder(TimeStampedModel):
     
     class Meta:
         db_table = 'cake_orders'
+        
+
+class Review(TimeStampedModel):
+    order   = models.OneToOneField(Order,on_delete=models.CASCADE,related_name='reviews')
+    user    = models.ForeignKey(User,on_delete=models.CASCADE)
+    title   = models.TextField()
+    content = models.TextField()
+    
+    class Meta:
+        db_table = 'Review'
+        
+    def __str__(self):
+        return f"{self.title}"
+    
