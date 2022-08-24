@@ -7,7 +7,8 @@ from .models        import (
                         PackageOrder,
                         OrderedProduct,
                         CafeOrder,
-                        CakeOrder    
+                        CakeOrder,
+                        Review
 )
 from products.models import Product
 
@@ -166,3 +167,9 @@ class UserOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model  = Order
         fields = ['id','type','title']
+        
+class ReviewSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model  = Review
+        fields = '__all__'

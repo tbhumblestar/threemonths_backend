@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from announcements.models       import FAQ, QnA, QnAComment
+from orders.models import Review
 
 
 class FAQSerializer(serializers.ModelSerializer):
@@ -31,3 +32,4 @@ class QnASerializer(serializers.ModelSerializer):
         
     def get_user_nickname(self,object):
         return object.user.nickname
+    

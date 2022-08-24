@@ -76,10 +76,12 @@ class CakeOrder(TimeStampedModel):
         
 
 class Review(TimeStampedModel):
-    order   = models.OneToOneField(Order,on_delete=models.CASCADE,related_name='reviews')
-    user    = models.ForeignKey(User,on_delete=models.CASCADE)
-    title   = models.TextField()
-    content = models.TextField()
+    order        = models.OneToOneField(Order,on_delete=models.CASCADE,related_name='reviews')
+    user         = models.ForeignKey(User,on_delete=models.CASCADE)
+    title        = models.TextField()
+    content      = models.TextField()
+    img_url      = models.CharField(max_length=500,null=True)
+    img_s3_path  = models.CharField(max_length=500,null=True)
     
     class Meta:
         db_table = 'Review'

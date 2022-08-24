@@ -5,7 +5,12 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         
         is_staff = bool(request.user and request.user.is_staff)
         return request.method == 'GET' or is_staff
-    
+
+class IsAuthenticatedOrReadOnly(permissions.BasePermission):
+    def has_permission(self,request,view):
+        
+        is_authenticated = bool(request.user and request.user.is_authenticated)
+        return request.method == 'GET' or is_authenticated
 
 class IsAdminOrIsWriterOrForbidden(permissions.BasePermission):
     

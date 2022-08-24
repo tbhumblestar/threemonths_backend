@@ -9,7 +9,6 @@ from .serializers       import IndependentImageSerializer, ProductSerializer
 from core.filters       import IndependentImageFilter, ProductFilter
 
 
-
 class IndependentImageListView(generics.ListAPIView):
     queryset         = IndependentImage.objects.all()
     serializer_class = IndependentImageSerializer

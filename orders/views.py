@@ -11,13 +11,14 @@ from datetime                   import datetime, timedelta
 from django.db.models           import Case, When
 
 
-from .models          import Order, PackageOrder, OrderedProduct
-from .serializers     import OrderSerializer, CafeOrderSerializer, CakeOrderSerializer, PackageOrderSerializer, UserOrderSerializer
+from .models          import Order, OrderedProduct, Review
+from .serializers     import OrderSerializer, CafeOrderSerializer, CakeOrderSerializer, PackageOrderSerializer, UserOrderSerializer, ReviewSerializer
 from core.filters     import OrderFilter
-from core.permissions import OrderDetailPermission, OrderPermission
+from core.permissions import OrderDetailPermission, OrderPermission, IsAdminOrReadOnly, IsAuthenticatedOrReadOnly
 from core.schema      import OrderSerializerSchema
-from core.cores       import query_debugger
+from core.cores       import query_debugger, S3Uploader
 
+import uuid
 
 detail_serializer_by_type = {
     "package" : PackageOrderSerializer,
@@ -278,7 +279,6 @@ class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
         return Response(serializer.data)
 
 
-
 valid_order_date = datetime.now() - timedelta(days=60)
 
 
@@ -303,3 +303,57 @@ class UserOrderListView(generics.ListAPIView):
                             reviews__isnull = True,
                             user            = user)
         return queryset
+    
+class ReviewView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    serializer_class   = ReviewSerializer
+    
+    def get_queryset(self):
+        
+        query_dict = {}
+        print(self.request.query_params)
+        
+        #마이페이지에서 user가 작성한 review만 모아보고 싶을 때
+        if self.request.query_params.get('user_review') == "True":
+            queryset = Review.objects.filter(user=self.request.user)
+            return queryset
+        
+        #package review 혹은 특정 cake상품 review
+        if self.request.query_params.get('type'):
+            query_dict['order__type'] = self.request.query_params.get('type')
+        if self.request.query_params.get('product_id'):
+            query_dict['order__cakeorders__product_id'] = self.request.query_params.get('product_id')
+        
+        queryset = Review.objects.filter(**query_dict)
+        return queryset
+    
+    def create(self, request, *args, **kwargs):
+        
+        
+        res_dict = {}
+        
+        if request.FILES:
+            s3_uploader = S3Uploader()
+            for img in request.FILES:
+                
+                #getlist의 경우 여러장의 이미지를 하나의 키값으로 받을때 배열로 받는 메서드이고,
+                #getitem의 경우 한장의 이미지가 하나의 키값에 존재할 때 사용할 수 있는 메서드이다.
+                
+                request.data.pop(img)
+                
+                img_data = request.FILES.__getitem__(img)
+                res_dict = s3_uploader.upload(
+                    file = img_data,
+                    Key  = f"backend/reviews/{str(uuid.uuid4())}",
+                    field_name = 'img'
+                    )
+        
+        
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer,res_dict)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def perform_create(self, serializer,res_dict):
+        serializer.save(**res_dict)
