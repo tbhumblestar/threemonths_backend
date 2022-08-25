@@ -282,14 +282,18 @@ class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 valid_order_date = datetime.now() - timedelta(days=60)
 
-
+@extend_schema_view(
+    get = extend_schema(
+        description = "## 권한 ## \n\n 로그인 햇을 경우 조회 가능 \n\n\n\n ## 목적 ## \n\n Review를 작성하기 위해 사용자가 주문했던 order 리스트를 조회 \n\n\n\n ## 조회되는 리스트 기준 ## \n\n -현재 요청을 보낸 유저의 Order \n\n -Type이 Packge 또는 Cake(Cafe 제외) \n\n -status가 completed \n\n -유저의 리뷰가 존재하지 않음 \n\n -날짜(cake:want_pick_up_date / PackageOrder:delivery_Date)가 오늘보다 60일 이내일 것 \n\n\n\n ## 특이사항 ## \n\n 지금은 테스트를 위하여 status가 completed가 아니여도 조회되도록 해두었음",
+    )
+)
 class UserOrderListView(generics.ListAPIView):
     
     permission_classes = [IsAuthenticated]
     serializer_class   = UserOrderSerializer
     
     """
-    -현재 요청을 보낸 유저의 & Type = Packge or Cake & review데이터가 없는 & 날짜(cake:want_pick_up_date / PackageOrder:delivery_Date)가 오늘보다 60일 이내
+    -현재 요청을 보낸 유저의 & Type이 Packge or Cake & status가 completed & review데이터가 없는 & 날짜(cake:want_pick_up_date / PackageOrder:delivery_Date)가 오늘보다 60일 이내
     """
     def get_queryset(self):
         user = self.request.user
@@ -302,6 +306,7 @@ class UserOrderListView(generics.ListAPIView):
                         filter(
                             dates__gte      = valid_order_date,
                             reviews__isnull = True,
+                            # status          = 'completed',
                             user            = user)
         return queryset
 

@@ -31,11 +31,11 @@ class S3Handler():
         self.client = boto3.client('s3',aws_access_key_id=secret_settings.AWS_ACCESS_KEY_ID,aws_secret_access_key=secret_settings.AWS_SECRET_ACCESS_KEY)
         
     def upload(self,file,Key,field_name='img',content_type='image/jpeg'):
-        
+
         
         #https://stackoverflow.com/questions/72208629/share-jpeg-file-stored-on-s3-via-url-instead-of-downloading
         # 'content-type' : 'multipart/form-data'
-        self.client.upload_fileobj(file,secret_settings.AWS_STORAGE_BUCKET_NAME,Key,ExtraArgs={'ContentType':'image/jpeg'})
+        self.client.upload_fileobj(file,secret_settings.AWS_STORAGE_BUCKET_NAME,Key,ExtraArgs={'ContentType':content_type})
         
         res_dict = {
             f'{field_name}_s3_path' : Key,
