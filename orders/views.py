@@ -485,12 +485,6 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
             
             img_dict.update(res_dict)
                 
-        
-        #해당 order에 대해 작성한 review가 있는지 테스트
-        order = request.data.get('order')
-        if Review.objects.filter(user=self.request.user,order=order).exists():
-            raise ValidationError("You have already written review for this order")
-        
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer,img_dict)
