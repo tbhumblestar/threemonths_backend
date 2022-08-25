@@ -356,7 +356,7 @@ class UserOrderListView(generics.ListAPIView):
     ],
     ),
     post = extend_schema(
-        description = "## 권한 ## \n\n 로그인 해야 생성(Post) 가능",
+        description = "## 권한 ## \n\n 로그인 해야 생성(Post) 가능 \n\n ## 제한 ## \n\n 하나의 Order에 대해 유저는 한번의 리뷰만 쓸 수 있음(삭제하고 다시 쓰는 건 가능)",
         request=inline_serializer('user',{
         "title"   : serializers.CharField(),
         "content" : serializers.CharField(),
@@ -393,10 +393,7 @@ class ReviewView(generics.ListCreateAPIView):
         
         queryset = queryset.filter(**query_dict)
         return queryset
-    
-    @extend_schema(methods=['PUT'], exclude=True)
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+
     
     @transaction.atomic()
     def create(self, request, *args, **kwargs):
