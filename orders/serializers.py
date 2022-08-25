@@ -168,8 +168,18 @@ class UserOrderSerializer(serializers.ModelSerializer):
         model  = Order
         fields = ['id','type','title']
         
+        
 class ReviewSerializer(serializers.ModelSerializer):
+    
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+    user_nickname = serializers.SerializerMethodField()
+    
+    def get_user_nickname(self,object):
+        return object.user.nickname
     
     class Meta:
         model  = Review
-        fields = '__all__'
+        fields = [
+            'id','title','content','order','created_at','updated_at','img_url','img_s3_path',
+            'user','user_nickname',
+            ]

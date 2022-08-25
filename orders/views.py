@@ -1,22 +1,23 @@
 from django.db.models           import Prefetch
 from django.db                  import transaction
+from requests import delete
 from rest_framework             import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework             import serializers
 from rest_framework.response    import Response
 from rest_framework             import status
-from drf_spectacular.utils      import extend_schema, extend_schema_view, inline_serializer, OpenApiExample, PolymorphicProxySerializer
+from drf_spectacular.utils      import extend_schema, extend_schema_view, inline_serializer, OpenApiExample, OpenApiParameter, OpenApiTypes
 from django_filters             import rest_framework as filters
 from datetime                   import datetime, timedelta
 from django.db.models           import Case, When
-
+from rest_framework.exceptions  import ValidationError
 
 from .models          import Order, OrderedProduct, Review
 from .serializers     import OrderSerializer, CafeOrderSerializer, CakeOrderSerializer, PackageOrderSerializer, UserOrderSerializer, ReviewSerializer
 from core.filters     import OrderFilter
-from core.permissions import OrderDetailPermission, OrderPermission, IsAdminOrReadOnly, IsAuthenticatedOrReadOnly
+from core.permissions import OrderDetailPermission, OrderPermission, IsAuthenticatedOrReadOnly, IsAdminOrIsWriterOrReadOnly
 from core.schema      import OrderSerializerSchema
-from core.cores       import query_debugger, S3Uploader
+from core.cores       import query_debugger, S3Handler
 
 import uuid
 
@@ -303,37 +304,107 @@ class UserOrderListView(generics.ListAPIView):
                             reviews__isnull = True,
                             user            = user)
         return queryset
-    
+
+@extend_schema_view(
+    get = extend_schema(
+        description = "## 권한 ## \n\n 누구나 조회 가능",
+        parameters=[
+        OpenApiParameter(
+            name        = 'user_review',
+            type        = OpenApiTypes.STR,
+            location    = OpenApiParameter.QUERY,
+            required    = False,
+            description = "특정 유저의 모든 리뷰를 모아보고 싶을 때 사용 \n\n True를 줄 경우, 요청을 보낸 유저의 모든 리뷰를 리스트로 보내줌",
+            examples    = [OpenApiExample(
+                name           = 'user_review',
+                value          = 'ex) True',
+                parameter_only = OpenApiParameter.QUERY,
+                description    = "True 이외의 값을 줄 경우 작동하지 않음"
+                )]
+            ),
+        OpenApiParameter(
+            name        = 'type',
+            type        = OpenApiTypes.STR,
+            location    = OpenApiParameter.QUERY,
+            required    = False,
+            description = "cake 또는 package의 모든 리뷰를 모아보고 싶을 때 사용 \n\n order의 타입(packageorder, cakeorder)이 일치하는 모든 리뷰를 가져옴",
+            examples    = [OpenApiExample(
+                name           = 'type',
+                value          = 'ex) cake,package',
+                parameter_only = OpenApiParameter.QUERY,
+                description    = "cake, package이외의 값을 넣어줄 경우 속하는 카테고리가 없어서 응답되는 데이터가 없음"
+                )]
+            ),
+        OpenApiParameter(
+            name        = 'product_id',
+            type        = OpenApiTypes.INT,
+            location    = OpenApiParameter.QUERY,
+            required    = False,
+            description = "특정 케이크 상품의 모든 리뷰를 모아보고 싶을 때 사용 \n\n 케이크 상품의 product_id에 속하는 모든 리뷰를 리스트로 응답",
+            examples    = [OpenApiExample(
+                name           = 'product_id',
+                value          = 'ex) 15',
+                parameter_only = OpenApiParameter.QUERY,
+                description    = "케이크 상품의 product_id를 넣어줘야 함"
+                )]
+            ),
+    ],
+    ),
+    post = extend_schema(
+        description = "## 권한 ## \n\n 로그인 해야 생성(Post) 가능",
+        request=inline_serializer('user',{
+        "title"   : serializers.CharField(),
+        "content" : serializers.CharField(),
+        "order"   : serializers.IntegerField(),
+        "img"     : serializers.FileField(),
+    }
+                                ),
+    )
+)
 class ReviewView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class   = ReviewSerializer
     
+    
     def get_queryset(self):
         
         query_dict = {}
-        print(self.request.query_params)
+        
+        queryset = Review.objects.all().select_related('user')
         
         #마이페이지에서 user가 작성한 review만 모아보고 싶을 때
         if self.request.query_params.get('user_review') == "True":
-            queryset = Review.objects.filter(user=self.request.user)
+            queryset = queryset.filter(user=self.request.user)
             return queryset
         
-        #package review 혹은 특정 cake상품 review
-        if self.request.query_params.get('type'):
-            query_dict['order__type'] = self.request.query_params.get('type')
-        if self.request.query_params.get('product_id'):
-            query_dict['order__cakeorders__product_id'] = self.request.query_params.get('product_id')
         
-        queryset = Review.objects.filter(**query_dict)
+        #package review 혹은 특정 cake상품 review
+        if self.request.query_params.get('product_id'):
+            query_dict['order__type'] = 'cake'
+            query_dict['order__cakeorders__product_id'] = self.request.query_params.get('product_id')
+        elif self.request.query_params.get('type'):
+            query_dict['order__type'] = self.request.query_params.get('type')
+            
+        
+        queryset = queryset.filter(**query_dict)
         return queryset
     
+    @extend_schema(methods=['PUT'], exclude=True)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+    
+    @transaction.atomic()
     def create(self, request, *args, **kwargs):
         
+        order = request.data.get('order')
+        if Review.objects.filter(user=self.request.user,order=order).exists():
+            raise ValidationError("You have already written review for this order")
         
-        res_dict = {}
+        
+        img_dict = {}
         
         if request.FILES:
-            s3_uploader = S3Uploader()
+            s3_handler = S3Handler()
             for img in request.FILES:
                 
                 #getlist의 경우 여러장의 이미지를 하나의 키값으로 받을때 배열로 받는 메서드이고,
@@ -342,11 +413,13 @@ class ReviewView(generics.ListCreateAPIView):
                 request.data.pop(img)
                 
                 img_data = request.FILES.__getitem__(img)
-                res_dict = s3_uploader.upload(
+                res_dict = s3_handler.upload(
                     file = img_data,
                     Key  = f"backend/reviews/{str(uuid.uuid4())}",
                     field_name = 'img'
                     )
+                
+        img_dict.update(res_dict)
         
         
         serializer = self.get_serializer(data=request.data)
@@ -356,4 +429,89 @@ class ReviewView(generics.ListCreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def perform_create(self, serializer,res_dict):
-        serializer.save(**res_dict)
+        user = self.request.user
+        serializer.save(**res_dict,user=user)
+
+
+@extend_schema(methods=['PUT'], exclude=True)
+@extend_schema_view(
+    get = extend_schema(
+        description = "## 권한 ## \n\n 누구나(비회원도) 가능"),
+    delete = extend_schema(
+        description = "## 권한 ## \n\n 작성자, 관리자가 아니면 불가능"),
+    patch = extend_schema(
+        description = "## 권한 ## \n\n 작성자, 관리자가 아니면 불가능",
+        request=inline_serializer('user',{
+        "title"   : serializers.CharField(),
+        "content" : serializers.CharField(),
+        "order"   : serializers.IntegerField(),
+        "img"     : serializers.FileField(),
+    }
+                                ),
+    )
+)
+class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAdminOrIsWriterOrReadOnly]
+    serializer_class   = ReviewSerializer
+    queryset           = Review.objects.all().select_related('user')
+    lookup_url_kwarg   = 'review_id'
+    lookup_field       = 'id'
+    
+    
+    def update(self, request, *args, **kwargs):
+        
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+
+        img_dict = {}        
+        if request.FILES:
+            
+            s3_handler = S3Handler()
+            for img in request.FILES:
+                
+                #getlist의 경우 여러장의 이미지를 하나의 키값으로 받을때 배열로 받는 메서드이고,
+                #getitem의 경우 한장의 이미지가 하나의 키값에 존재할 때 사용할 수 있는 메서드이다.
+                request.data.pop(img)
+                s3_handler.delete(instance.img_s3_path)
+                
+                img_file = request.FILES.__getitem__(img)
+                res_dict = s3_handler.upload(
+                    file = img_file,
+                    Key  = f"backend/reviews/{str(uuid.uuid4())}",
+                    field_name = 'img'
+                    )
+            
+            img_dict.update(res_dict)
+                
+        
+        #해당 order에 대해 작성한 review가 있는지 테스트
+        order = request.data.get('order')
+        if Review.objects.filter(user=self.request.user,order=order).exists():
+            raise ValidationError("You have already written review for this order")
+        
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer,img_dict)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
+    
+    def perform_update(self, serializer,img_dict):
+        serializer.save(**img_dict)
+    
+    
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        
+        s3_handler = S3Handler()
+        s3_handler.delete(instance.img_s3_path)
+        
+        self.perform_destroy(instance)
+        
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    

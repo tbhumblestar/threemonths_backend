@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from core.permissions           import IsAdminOrReadOnly,IsAdminOrIsWriterOrForbidden
 from announcements.models       import FAQ, QnA, QnAComment
 from announcements.serializers  import FAQSerializer, QnASerializer, QnACommentSerializer
-from core.cores                 import S3Uploader, query_debugger
+from core.cores                 import S3Handler, query_debugger
 
 @extend_schema(methods=['Post','PUT','patch','Delete'], exclude=True)
 class FAQView(generics.ListCreateAPIView):
@@ -82,7 +82,7 @@ class NoticeAPIView(APIView):
 
         
         if request.FILES:
-            s3_uploader = S3Uploader()
+            s3_uploader = S3Handler()
             print(request.FILES)
             for img in request.FILES:
                 

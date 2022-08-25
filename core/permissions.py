@@ -31,6 +31,16 @@ class IsAdminOrIsWriterOrForbidden(permissions.BasePermission):
 
 
 
+class IsAdminOrIsWriterOrReadOnly(permissions.BasePermission):
+    
+    def has_object_permission(self,request,view,obj):
+        
+        is_staff = bool(request.user.is_staff)
+        is_writer = bool(request.user == obj.user)
+
+        return is_staff or is_writer or request.mehtod == 'GET'
+
+
 class OrderPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         is_authenticated = bool(request.user and request.user.is_authenticated)

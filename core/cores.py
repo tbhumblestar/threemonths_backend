@@ -12,7 +12,8 @@ def query_debugger(func):
         start  = time.perf_counter()
         result = func(*args, **kwargs)
         end    = time.perf_counter()
-        number_of_end_queries = len(connection.queries) - 1 if len(connection.queries) else 0
+        number_of_end_queries = len(connection.queries)
+        #  - 1 if len(connection.queries) else 0
         print(f"-------------------------------------------------------------------")
         print(f"start_time :{datetime.datetime.now()}")
         print(f"Function : {func.__name__}")
@@ -25,7 +26,7 @@ def query_debugger(func):
 
 
 
-class S3Uploader():
+class S3Handler():
     def __init__(self):
         self.client = boto3.client('s3',aws_access_key_id=secret_settings.AWS_ACCESS_KEY_ID,aws_secret_access_key=secret_settings.AWS_SECRET_ACCESS_KEY)
         
@@ -45,5 +46,5 @@ class S3Uploader():
     
     def delete(self,Key):
         self.client.delete_object(Bucket=secret_settings.AWS_STORAGE_BUCKET_NAME,Key=Key)
-        # self.client.delete_object(Bucket=secret_settings.AWS_STORAGE_BUCKET_NAME,Key="backend/test2.jpeg")
+
     
