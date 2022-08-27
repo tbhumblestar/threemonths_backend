@@ -296,7 +296,13 @@ class UserOrderListView(generics.ListAPIView):
     -현재 요청을 보낸 유저의 & Type이 Packge or Cake & status가 completed & review데이터가 없는 & 날짜(cake:want_pick_up_date / PackageOrder:delivery_Date)가 오늘보다 60일 이내
     """
     def get_queryset(self):
+        
         user = self.request.user
+        
+        if self.request.data.get('all') == "True":
+            queryset = Order.objects.all(user=user)
+            return queryset
+    
         queryset = Order.objects.\
             filter(type__in=['cake','package']).\
                 select_related('cafeorders','cakeorders','reviews').\
