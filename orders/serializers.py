@@ -180,6 +180,6 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model  = Review
         fields = [
-            'id','title','content','order','created_at','updated_at','img_url','img_s3_path',
+            'id','content','order','created_at','updated_at','img_url','img_s3_path',
             'user','user_nickname',
             ]
