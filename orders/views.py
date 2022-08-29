@@ -427,18 +427,18 @@ class ReviewView(generics.ListCreateAPIView):
                     field_name = 'img'
                     )
                 
-        img_dict.update(res_dict)
+            img_dict.update(res_dict)
         
         
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer,res_dict)
+        self.perform_create(serializer,img_dict)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    def perform_create(self, serializer,res_dict):
+    def perform_create(self, serializer,img_dict):
         user = self.request.user
-        serializer.save(**res_dict,user=user)
+        serializer.save(**img_dict,user=user)
 
 
 @extend_schema(methods=['PUT'], exclude=True)
