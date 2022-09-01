@@ -166,7 +166,7 @@ class UserOrderSerializer(serializers.ModelSerializer):
     
     class Meta:
         model  = Order
-        fields = ['id','type','title']
+        fields = ['id','type','title','created_at']
         
         
 class ReviewSerializer(serializers.ModelSerializer):

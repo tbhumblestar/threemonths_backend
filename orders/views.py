@@ -449,13 +449,27 @@ class ReviewView(generics.ListCreateAPIView):
         description = "## 권한 ## \n\n 작성자, 관리자가 아니면 불가능"),
     patch = extend_schema(
         description = "## 권한 ## \n\n 작성자, 관리자가 아니면 불가능",
+        parameters=[
+        OpenApiParameter(
+            name        = 'img_delete',
+            type        = OpenApiTypes.STR,
+            location    = OpenApiParameter.QUERY,
+            required    = False,
+            description = "해당 리뷰의 이미지를 삭제할때 사용. [img]라는 값을 보내줄 경우 해당 리뷰의 image가 삭제됨. []라는 값을 보낼 경우 아무기능도 하지 않음 ",
+            examples    = [OpenApiExample(
+                name           = 'img_delete',
+                value          = 'ex) [img] , []',
+                parameter_only = OpenApiParameter.QUERY,
+                description    = "[img] 또는 []만 허용. 그 외에는 에러 발생"
+                )]
+            )],
         request=inline_serializer('user',{
         "title"   : serializers.CharField(),
         "content" : serializers.CharField(),
         "order"   : serializers.IntegerField(),
         "img"     : serializers.FileField(),
-    }
-                                ),
+            }
+        )
     )
 )
 class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -470,17 +484,21 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
         
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-
+        
+        s3_handler = S3Handler()
+        
         img_dict = {}        
         if request.FILES:
             
-            s3_handler = S3Handler()
+            
             for img in request.FILES:
                 
                 #getlist의 경우 여러장의 이미지를 하나의 키값으로 받을때 배열로 받는 메서드이고,
                 #getitem의 경우 한장의 이미지가 하나의 키값에 존재할 때 사용할 수 있는 메서드이다.
                 request.data.pop(img)
-                s3_handler.delete(instance.img_s3_path)
+                
+                if instance.img_s3_path:
+                    s3_handler.delete(instance.img_s3_path)
                 
                 img_file = request.FILES.__getitem__(img)
                 res_dict = s3_handler.upload(
@@ -488,9 +506,36 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
                     Key  = f"backend/reviews/{str(uuid.uuid4())}",
                     field_name = 'img'
                     )
-            
+        
             img_dict.update(res_dict)
                 
+        if request.query_params.get('img_delete'):
+            img_delete_list = request.query_params.get('img_delete').lstrip('[').rstrip(']').split(',')
+        
+            if img_delete_list[0]:
+                for img in img_delete_list:
+                    img_s3_path = getattr(instance,f'{img}_s3_path')
+                    img_url     = getattr(instance,f'{img}_url')
+                    s3_handler.delete(img_s3_path)
+
+                    setattr(instance,f'{img}_s3_path',None)
+                    setattr(instance,f'{img}_url',None)
+
+                
+                # setattr(instance,)
+            # instance.getattr()
+        
+        # if request.query_params.get('img_delete'):
+        #     print(request.query_params.get('img_delete'))
+        #     img_delete_list = request.query_params.get('img_delete')
+        #     img_delete_list = list(request.query_params.get('img_delete'))
+        #     print(img_delete_list)
+        #     print(img_delete_list[0])
+        #     print(type(img_delete_list[0]))
+
+        
+                
+        
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer,img_dict)
