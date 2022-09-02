@@ -554,8 +554,9 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         
-        s3_handler = S3Handler()
-        s3_handler.delete(instance.img_s3_path)
+        if instance.img_s3_path:
+            s3_handler = S3Handler()
+            s3_handler.delete(instance.img_s3_path)
         
         self.perform_destroy(instance)
         

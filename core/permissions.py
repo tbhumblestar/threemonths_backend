@@ -38,7 +38,7 @@ class IsAdminOrIsWriterOrReadOnly(permissions.BasePermission):
         is_staff = bool(request.user.is_staff)
         is_writer = bool(request.user == obj.user)
 
-        return is_staff or is_writer or request.mehtod == 'GET'
+        return is_staff or is_writer or request.method == 'GET'
 
 
 class OrderPermission(permissions.BasePermission):
