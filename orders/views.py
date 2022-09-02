@@ -284,7 +284,22 @@ valid_order_date = datetime.now() - timedelta(days=60)
 
 @extend_schema_view(
     get = extend_schema(
-        description = "## 권한 ## \n\n 로그인 햇을 경우 조회 가능 \n\n\n\n ## 목적 ## \n\n Review를 작성하기 위해 사용자가 주문했던 order 리스트를 조회 \n\n\n\n ## 조회되는 리스트 기준 ## \n\n -현재 요청을 보낸 유저의 Order \n\n -Type이 Packge 또는 Cake(Cafe 제외) \n\n -status가 completed \n\n -유저의 리뷰가 존재하지 않음 \n\n -날짜(cake:want_pick_up_date / PackageOrder:delivery_Date)가 오늘보다 60일 이내일 것 \n\n\n\n ## 특이사항 ## \n\n 지금은 테스트를 위하여 status가 completed가 아니여도 조회되도록 해두었음",
+        description = "## 권한 ## \n\n 로그인 햇을 경우 조회 가능 \n\n\n\n ## 사용법1 : 단순요청 ## \n\n Review를 작성하기 위해 사용자가 주문했던 order 리스트를 조회 \n\n\n\n ### 조회되는 리스트 기준 ### \n\n - 현재 요청을 보낸 유저의 Order \n\n - Type이 Packge 또는 Cake(Cafe 제외) \n\n - status가 completed \n\n - 유저의 리뷰가 존재하지 않음 \n\n - 날짜(cake:want_pick_up_date / PackageOrder:delivery_Date)가 오늘보다 60일 이내일 것 \n\n\n\n ### 특이사항 ### \n\n 지금은 테스트를 위하여 status가 completed가 아니여도 조회되도록 해두었음 \n\n ## 사용법2 : query_params 'all' 사용 ## \n\n all이라는 쿼리파라미터에 True값을 줄 경우, 요청을 보낸 유저의 모든 오더가 응답됨",
+        parameters=[
+            OpenApiParameter(
+            name        = 'all',
+            type        = OpenApiTypes.STR,
+            location    = OpenApiParameter.QUERY,
+            required    = False,
+            description = "특정 유저의 모든 주문를 모아보고 싶을 때 사용 \n\n True를 줄 경우, 요청을 보낸 유저의 모든 리뷰를 리스트로 보내줌",
+            examples    = [OpenApiExample(
+                name           = 'all',
+                value          = 'ex) True',
+                parameter_only = OpenApiParameter.QUERY,
+                description    = "True 이외의 값을 줄 경우, 해당 쿼리파라미터를 보내지 않는 것과 동일함. 즉 cafe가 포함되지 않은, 유저가 리뷰를 작성할 수 있는 오더리스트가 응답됨"
+                )]
+            )
+        ]
     )
 )
 class UserOrderListView(generics.ListAPIView):
@@ -299,8 +314,8 @@ class UserOrderListView(generics.ListAPIView):
         
         user = self.request.user
         
-        if self.request.data.get('all') == "True":
-            queryset = Order.objects.all(user=user)
+        if self.request.query_params.get('all') == "True":
+            queryset = Order.objects.filter(user=user)
             return queryset
     
         queryset = Order.objects.\
