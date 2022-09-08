@@ -18,6 +18,7 @@ from core.filters     import OrderFilter
 from core.permissions import OrderDetailPermission, OrderPermission, IsAuthenticatedOrReadOnly, IsAdminOrIsWriterOrReadOnly
 from core.schema      import OrderSerializerSchema
 from core.cores       import query_debugger, S3Handler
+from core.pagination  import OrderListPagination
 
 import uuid
 
@@ -36,6 +37,35 @@ order_related_name_by_type = {
 @extend_schema(
     request   = OrderSerializerSchema,
     responses = OrderSerializerSchema,
+    parameters=[
+        OpenApiParameter(
+            name        = 'offset',
+            type        = OpenApiTypes.INT,
+            location    = OpenApiParameter.QUERY,
+            required    = False,
+            description = "Pagination에서 상품리스트의 시작번호",
+            examples    = [OpenApiExample(
+                name           = 'offset',
+                value          = 'ex) 1,10,15...',
+                parameter_only = OpenApiParameter.QUERY,
+                description    = "아무것도 넣어주지 않을 경우, 가장 최근에 만들어진 데이터부터 나열됩니다"
+                )]
+            ),
+        OpenApiParameter(
+            name        = 'limit',
+            type        = OpenApiTypes.INT,
+            location    = OpenApiParameter.QUERY,
+            required    = False,
+            description = "한 페이지에서 받을 데이터개수",
+            examples    = [OpenApiExample(
+                name           = 'limit',
+                value          = 'ex) 1,10,15..',
+                parameter_only = OpenApiParameter.QUERY,
+                description    = "아무것도 넣어주지 않을 경우 20이 기본값으로 설정됩니다. 최대값은 50까지 가능"
+                )]
+            ),
+    ],
+    
 )
 class OrderView(generics.ListCreateAPIView):
     
@@ -48,6 +78,7 @@ class OrderView(generics.ListCreateAPIView):
     serializer_class   = OrderSerializer
     filter_backends    = [filters.DjangoFilterBackend]
     filterset_class    = OrderFilter
+    pagination_class   = OrderListPagination
 
     
     @transaction.atomic
@@ -535,21 +566,6 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
 
                     setattr(instance,f'{img}_s3_path',None)
                     setattr(instance,f'{img}_url',None)
-
-                
-                # setattr(instance,)
-            # instance.getattr()
-        
-        # if request.query_params.get('img_delete'):
-        #     print(request.query_params.get('img_delete'))
-        #     img_delete_list = request.query_params.get('img_delete')
-        #     img_delete_list = list(request.query_params.get('img_delete'))
-        #     print(img_delete_list)
-        #     print(img_delete_list[0])
-        #     print(type(img_delete_list[0]))
-
-        
-                
         
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)

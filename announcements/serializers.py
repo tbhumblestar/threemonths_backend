@@ -1,6 +1,6 @@
-from rest_framework import serializers
-from announcements.models       import FAQ, QnA, QnAComment
-from orders.models import Review
+from rest_framework       import serializers
+from announcements.models import FAQ, QnA, QnAComment,Notice
+
 
 
 class FAQSerializer(serializers.ModelSerializer):
@@ -33,3 +33,30 @@ class QnASerializer(serializers.ModelSerializer):
     def get_user_nickname(self,object):
         return object.user.nickname
     
+
+class NoticeSerializer(serializers.ModelSerializer):
+    
+    img1_url     = serializers.CharField(read_only=True)
+    img1_s3_path = serializers.CharField(read_only=True)
+    img2_url     = serializers.CharField(read_only=True)
+    img2_s3_path = serializers.CharField(read_only=True)
+    img3_url     = serializers.CharField(read_only=True)
+    img3_s3_path = serializers.CharField(read_only=True)
+    
+    class Meta:
+        model = Notice
+        fields = ['id','title','created_at','content',
+                    'img1_url','img1_s3_path','img2_url','img2_s3_path','img3_url','img3_s3_path'
+                    ]
+        
+    #dynamic_filtering
+    def __init__(self,*args,**kwargs):
+        super().__init__(*args,**kwargs)
+        want_fields = self.context.get('want_fields')
+        
+        
+        if want_fields:
+            allowed = set(want_fields)
+            existing = set(self.fields)
+            for field_name in existing-allowed:
+                self.fields.pop(field_name)
