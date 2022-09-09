@@ -64,6 +64,19 @@ order_related_name_by_type = {
                 description    = "아무것도 넣어주지 않을 경우 20이 기본값으로 설정됩니다. 최대값은 50까지 가능"
                 )]
             ),
+        OpenApiParameter(
+            name        = 'no_pagination',
+            type        = OpenApiTypes.STR,
+            location    = OpenApiParameter.QUERY,
+            required    = False,
+            description = "True값을 줄 경우, pagination기능이 비활성되어 데이터 전체를 한번에 받음",
+            examples    = [OpenApiExample(
+                name           = 'no_pagination',
+                value          = 'ex) True',
+                parameter_only = OpenApiParameter.QUERY,
+                description    = "아무것도 넣어주지 않거나 True 이외의 값을 줄 경우 pagination기능이 활성화 됩니다. "
+                )]
+            ),
     ],
     
 )
@@ -79,6 +92,16 @@ class OrderView(generics.ListCreateAPIView):
     filter_backends    = [filters.DjangoFilterBackend]
     filterset_class    = OrderFilter
     pagination_class   = OrderListPagination
+
+
+    #for pagination disable    
+    def paginate_queryset(self, queryset):
+        """
+        Return a single page of results, or `None` if pagination is disabled.
+        """
+        if self.paginator is None or self.request.query_params.get('no_pagination',None) == "True":
+            return None
+        return self.paginator.paginate_queryset(queryset, self.request, view=self)
 
     
     @transaction.atomic
