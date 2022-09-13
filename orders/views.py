@@ -1,6 +1,5 @@
 from django.db.models           import Prefetch
 from django.db                  import transaction
-from requests import delete
 from rest_framework             import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework             import serializers

@@ -28,13 +28,14 @@
 - to_representation 등을 활용한 serializer customizing
 - select_related, prefetch_related, prefetch 등을 활용한 ORM 최적화
 - API testcode 구현
+
+#### Swagger
 - drf-spectacular를 활용한 API문서화(http://15.164.163.31:8001/api/schema/swagger-ui/)
 
 #### 배포
 - AWS의 EC2, RDS, S3를 활용한 배포
 - Docker compose를 활용한 Nginx Reverse Proxy 서버 구축 및 이를 활용한 HTTPS 기능 구현(https://github.com/tbhumblestar/threemonths_backend_docker)
 - Crontab을 사용한 HTTPS 인증서 자동갱신
-
 
 ## API
 - Announcement, Order, Product, Image, User 리소스 관련 API 구현
