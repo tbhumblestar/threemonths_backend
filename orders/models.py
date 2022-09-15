@@ -25,6 +25,7 @@ class Order(TimeStampedModel):
     contact                = models.CharField(max_length=150)
     status                 = models.CharField(max_length=50, choices= status_type,blank=True,default='not_confirmed')
     additional_explanation = models.CharField(max_length=900, null=True,blank=True)
+    reviewed               = models.BooleanField(default=False)
     
     class Meta:
         db_table = 'orders'
