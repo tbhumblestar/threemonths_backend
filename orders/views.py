@@ -361,7 +361,7 @@ class UserOrderListView(generics.ListAPIView):
     serializer_class   = UserOrderSerializer
     
     """
-    -현재 요청을 보낸 유저의 & Type이 Packge or Cake & status가 completed & review데이터가 없는 & 날짜(cake:want_pick_up_date / PackageOrder:delivery_Date)가 오늘보다 60일 이내
+    -현재 요청을 보낸 유저의 & Type이 Packge or Cake & status가 completed & review데이터가 없는 & reviewed = False인(review가 작성된 적이 없는) & 날짜(cake:want_pick_up_date / PackageOrder:delivery_Date)가 오늘보다 60일 이내
     """
     def get_queryset(self):
         
@@ -380,6 +380,7 @@ class UserOrderListView(generics.ListAPIView):
                         filter(
                             dates__gte      = valid_order_date,
                             reviews__isnull = True,
+                            reviewed        = False,
                             # status          = 'completed',
                             user            = user)
         return queryset
@@ -606,6 +607,10 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
     
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+        
+        review_order = instance.order
+        review_order.reviewed = True
+        review_order.save()
         
         if instance.img_s3_path:
             s3_handler = S3Handler()
