@@ -83,7 +83,6 @@ class QnACommenDetailView(generics.RetrieveDestroyAPIView):
     lookup_field       = 'id'
     
     
-    
 @extend_schema_view(
     get = extend_schema(
     description='## 권한 ## \n\n 누구나(비회원도) 가능',
