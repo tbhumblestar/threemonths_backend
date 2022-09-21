@@ -9,7 +9,3 @@ admin.site.register(ProductImage)
 
 #IndependentImage
 admin.site.register(IndependentImage)
-
-#Package
-admin.site.register(Package)
-admin.site.register(PackageImage)

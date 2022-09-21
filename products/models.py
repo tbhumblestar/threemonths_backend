@@ -66,21 +66,3 @@ class IndependentImage(models.Model):
     
     class Meta:
         db_table = 'independent_images'
-
-
-class Package(models.Model):
-    description  = models.CharField(max_length=50)
-    
-    class Meta:
-        db_table = 'package'
-        
-
-class PackageImage(models.Model):
-    
-    package   = models.ForeignKey("Package",on_delete=models.CASCADE)
-    img_src = models.CharField(max_length=250)
-    page      = models.CharField(max_length=50)
-    place     = models.CharField(max_length=50)
-    
-    class Meta:
-        db_table = 'package_images'
