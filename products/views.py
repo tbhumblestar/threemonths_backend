@@ -20,9 +20,12 @@ class IndependentImageListView(generics.ListAPIView):
     filter_backends  = [filters.DjangoFilterBackend]
     filterset_class  = IndependentImageFilter
 
-    
-@extend_schema(
-    description='Check Kakao access_token and return JWT_TOKEN',
+@extend_schema_view(
+    post = extend_schema(
+        description='## 설명 ## \n\n 상품 생성 \n\n 어드민 페이지에서 사용 \n\n <br/> \n\n ## 권한 ## \n\n 관리자만 가능'
+    ),
+    get = extend_schema(
+    description='## 설명 ## \n\n 상품 List 조회 \n\n <br/> \n\n ## 권한 ## \n\n 누구나(비회원도) 가능',
     parameters=[
         OpenApiParameter(
             name        = 'fields',
@@ -51,7 +54,7 @@ class IndependentImageListView(generics.ListAPIView):
                 )]
             )
     ],
-)
+))
 class ProductView(generics.ListCreateAPIView):
     permission_classes = [IsAdminOrReadOnly]
     queryset           = Product.objects.all().prefetch_related('product_images')
@@ -142,11 +145,11 @@ class ProductView(generics.ListCreateAPIView):
 @extend_schema(methods=['PUT'], exclude=True)
 @extend_schema_view(
     get = extend_schema(
-        description = "## 권한 ## \n\n 누구나(비회원도) 가능"),
+        description = "## 설명 ## \n\n 상품 검색 \n\n <br/> \n\n ## 권한 ## \n\n 누구나(비회원도) 가능"),
     delete = extend_schema(
-        description = "## 권한 ## \n\n 관리자만 가능"),
+        description = "## 설명 ## \n\n 상품 삭제 \n\n 어드민 페이지에서 사용 \n\n <br/> \n\n ## 권한 ## \n\n 관리자만 가능"),
     patch = extend_schema(
-        description = "## 권한 ## \n\n 관리자만 가능",
+        description = "## 설명 ## \n\n 상품 수정 \n\n 어드민 페이지에서 사용 \n\n <br/> \n\n ## 권한 ## \n\n 관리자만 가능",
         parameters=[
         OpenApiParameter(
             name        = 'img_delete',

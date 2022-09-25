@@ -167,13 +167,12 @@ SIMPLE_JWT = {
 }
 
 AUTH_USER_MODEL = 'users.User'
-# AUTH_USER_MODEL = 'core.User'
 
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'ThreeMonth API',
-    'DESCRIPTION': '서울 빵 다 팔거야!!',
-    'VERSION': '2.0',
+    'DESCRIPTION': 'ThreeMonths Project(http://threemonths.net/)의 API에 관한 Swagger입니다 !!',
+    'VERSION': '2차배포',
     'SERVE_INCLUDE_SCHEMA': False,
     # OTHER SETTINGS
     'SWAGGER_UI_SETTINGS': {
@@ -211,20 +210,3 @@ SPECTACULAR_SETTINGS = {
 #         },
 #     },
 # }
-
-
-# #ENV 사용법
-# from environ import Env
-# env = Env()
-# env_path = BASE_DIR / ".env"
-# if env_path.exists():
-#     with env_path.open('rt',encoding='utf8') as f:
-#         env.read_env(f,overwrite=True)
-
-# EMAIL_HOST=env.str("EMAIL_HOST")
-# EMAIL_PORT=env.int("EMAIL_PORT")
-# EMAIL_USE_SSL=env.bool('EMAIL_USE_SSL')
-# EMAIL_HOST_USER=env.str('EMAIL_HOST_USER')
-# EMAIL_HOST_PASSWORD=env.str('EMAIL_HOST_PASSWORD')
-
-# DEFAULT_FORM_EMAIL = f"{EMAIL_HOST}@naver.com"

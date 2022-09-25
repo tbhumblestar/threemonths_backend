@@ -33,10 +33,10 @@ order_related_name_by_type = {
     "cafe"    : 'cafeorders',
 }
 
-@extend_schema(
-    request   = OrderSerializerSchema,
-    responses = OrderSerializerSchema,
-    parameters=[
+@extend_schema_view(
+    get = extend_schema(
+        description = "## 설명 ## \n\n Order List조회 \n\n <br/> \n\n ## 권한 ## \n\n 누구나(비회원도) 가능",
+        parameters=[
         OpenApiParameter(
             name        = 'offset',
             type        = OpenApiTypes.INT,
@@ -77,8 +77,15 @@ order_related_name_by_type = {
                 )]
             ),
     ],
+        )
+    ,
+    post = extend_schema(
+        description = "## 설명 ## \n\n Order 생성 \n\n <br/> \n\n ## 권한 ## \n\n 로그인한 유저는 누구나 가능",
+        request   = OrderSerializerSchema,
+        responses = OrderSerializerSchema,
+        ),
     
-)
+) 
 class OrderView(generics.ListCreateAPIView):
     
     permission_classes = (OrderPermission,)

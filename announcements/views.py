@@ -10,13 +10,20 @@ from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils      import extend_schema, OpenApiParameter, OpenApiExample, OpenApiTypes, extend_schema_view, inline_serializer
 from django.db                  import transaction
 
-from core.permissions           import IsAdminOrReadOnly,IsAdminOrIsWriterOrForbidden
+from core.permissions           import IsAdminOrReadOnly,IsAdminOrIsWriterOrForbidden,IsAuthenticatedOrReadOnly
 from announcements.models       import FAQ, QnA, QnAComment, Notice
 from announcements.serializers  import FAQSerializer, NoticeSerializer, QnASerializer, QnACommentSerializer
 from core.cores                 import S3Handler, query_debugger
 
 
-@extend_schema(methods=['Post','PUT','patch','Delete'], exclude=True)
+
+
+@extend_schema_view(
+    get = extend_schema(
+        description = "## 설명 ## \n\n FAQ List조회 \n\n <br/> \n\n ## 권한 ## \n\n 누구나(비회원도) 가능"),
+    post = extend_schema(
+        description = "## 설명 ## \n\n FAQ 생성 \n\n 어드민페이지에서 사용\n\n <br/> \n\n ## 권한 ## \n\n 관리자만 가능"),
+) 
 class FAQView(generics.ListCreateAPIView):
     permission_classes = [IsAdminOrReadOnly]
     queryset         = FAQ.objects.all()
@@ -26,8 +33,16 @@ class FAQView(generics.ListCreateAPIView):
         user = self.request.user
         serializer.save(user = self.request.user)
 
-
-@extend_schema(methods=['Post','PUT','patch','Delete'], exclude=True)
+@extend_schema_view(
+    get = extend_schema(
+        description = "## 설명 ## \n\n FAQ 검색 \n\n <br/> \n\n  ## 권한 ## \n\n 누구나(비회원도) 가능"),
+    delete = extend_schema(
+        description = "## 설명 ## \n\n FAQ 삭제 \n\n 어드민페이지에서 사용 \n\n <br/> \n\n  ## 권한 ## \n\n 관리자만 가능"),
+    patch = extend_schema(
+        description = "## 설명 ## \n\n FAQ 수정 \n\n 어드민페이지에서 사용 \n\n <br/> \n\n  ## 권한 ## \n\n 관리자만 가능",
+    )
+) 
+@extend_schema(methods=['PUT'], exclude=True)
 class FAQDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAdminOrReadOnly]
     queryset         = FAQ.objects.all()
@@ -36,9 +51,15 @@ class FAQDetailView(generics.RetrieveUpdateDestroyAPIView):
     lookup_field       = 'id'
 
 
-@extend_schema(methods=['POST'], exclude=True)
+
+@extend_schema_view(
+    get = extend_schema(
+        description = "## 설명 ## \n\n QnA List 조회 \n\n <br/> \n\n  ## 권한 ## \n\n 누구나(비회원도) 가능"),
+    post = extend_schema(
+        description = "## 설명 ## \n\n QnA 생성 \n\n <br/> \n\n  ## 권한 ## \n\n 로그인했으면 누구나 가능"),
+) 
 class QnAView(generics.ListCreateAPIView):
-    permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     queryset           = QnA.objects.all().\
         select_related('user').\
             prefetch_related(Prefetch('qna_comments',queryset=QnAComment.objects.all().select_related('user')))
@@ -48,11 +69,17 @@ class QnAView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         user = self.request.user
         serializer.save(user = self.request.user)
-    
-    @query_debugger
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+        
 
+@extend_schema_view(
+    get = extend_schema(
+        description = "## 설명 ## \n\n QnA 검색 \n\n <br/> \n\n  ## 권한 ## \n\n 작성자 / 관리자만 가능"),
+    delete = extend_schema(
+        description = "## 설명 ## \n\n QnA 삭제 \n\n <br/> \n\n  ## 권한 ## \n\n 작성자 / 관리자만 가능 "),
+    patch = extend_schema(
+        description = "## 설명 ## \n\n QnA 수정 \n\n <br/> \n\n  ## 권한 ## \n\n 작성자 / 관리자만 가능 ",
+    )
+) 
 @extend_schema(methods=['PUT'], exclude=True)
 class QnADetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAdminOrIsWriterOrForbidden]
@@ -61,8 +88,13 @@ class QnADetailView(generics.RetrieveUpdateDestroyAPIView):
     lookup_url_kwarg   = 'qna_id'
     lookup_field       = 'id'
     
-    
-@extend_schema(methods=['GET','PUT','PATCH','DELETE'], exclude=True)
+
+@extend_schema_view(
+    get = extend_schema(
+        description = "## 설명 ## \n\n QnaComment List조회 \n\n <br/> \n\n  ## 권한 ## \n\n 로그인했으면 누구나 가능"),
+    post = extend_schema(
+        description = "## 설명 ## \n\n QnaComment 생성 \n\n <br/> \n\n  ## 권한 ## \n\n 로그인했으면 누구나 가능"),
+)
 class QnACommentView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class   = QnACommentSerializer
@@ -74,18 +106,27 @@ class QnACommentView(generics.ListCreateAPIView):
         serializer.save(user = self.request.user,qna_id = qna_id)
     
 
-@extend_schema(methods=['GET','PUT','PATCH'], exclude=True)
+@extend_schema_view(
+    get = extend_schema(
+        description = "## 설명 ## \n\n QnaComment 검색 \n\n  어드민 페이지에서 사용 \n\n <br/> \n\n  ## 권한 ## \n\n 작성자 / 관리자만 가능"),
+    delete = extend_schema(
+        description = "## 설명 ## \n\n QnaComment 삭제 \n\n  어드민 페이지에서 사용 \n\n <br/> \n\n  ## 권한 ## \n\n 작성자 / 관리자만 가능"),
+    patch = extend_schema(
+        description = "## 설명 ## \n\n QnaComment 수정 \n\n  어드민 페이지에서 사용 \n\n <br/> \n\n  ## 권한 ## \n\n 작성자 / 관리자만 가능",
+    )
+) 
+@extend_schema(methods=['PUT'], exclude=True)
 class QnACommenDetailView(generics.RetrieveDestroyAPIView):
     permission_classes = [IsAdminOrIsWriterOrForbidden]
     serializer_class   = QnACommentSerializer
     queryset           = QnAComment.objects.all()
     lookup_url_kwarg   = 'comment_id'
     lookup_field       = 'id'
-    
-    
+
+
 @extend_schema_view(
     get = extend_schema(
-    description='## 권한 ## \n\n 누구나(비회원도) 가능',
+    description='## 설명 ## \n\n 공지사항 List 조회 \n\n <br/> \n\n ## 권한 ## \n\n 누구나(비회원도) 가능',
     parameters=[
         OpenApiParameter(
             name        = 'fields',
@@ -101,10 +142,9 @@ class QnACommenDetailView(generics.RetrieveDestroyAPIView):
                 )]
             ),
     ],
-    
 ),
     post=extend_schema(
-        description='## 권한 ## \n\n 관리자만 가능',
+        description="## 설명 ## \n\n 공지사항 생성 \n\n 어드민페이지에서 사용 \n\n <br/> \n\n  ## 권한 ## \n\n 관리자만 가능",
         request=inline_serializer('notice_create',{
         "title"          : serializers.CharField(),
         "content"        : serializers.CharField(),
@@ -170,11 +210,11 @@ class NoticeView(generics.ListCreateAPIView):
 @extend_schema(methods=['PUT'], exclude=True)
 @extend_schema_view(
     get = extend_schema(
-        description = "## 권한 ## \n\n 누구나(비회원도) 가능"),
+        description = "## 설명 ## \n\n 공지사항 조회 \n\n <br/> \n\n ## 권한 ## \n\n 누구나(비회원도) 가능"),
     delete = extend_schema(
-        description = "## 권한 ## \n\n 관리자만 가능"),
+        description = "## 설명 ## \n\n 공지사항 삭제 \n\n 어드민페이지에서 사용 \n\n <br/> \n\n ## 권한 ## \n\n 관리자만 가능"),
     patch = extend_schema(
-        description = "## 권한 ## \n\n 관리자만 가능",
+        description = "## 설명 ## \n\n 공지사항 수정 \n\n 어드민페이지에서 사용 \n\n <br/> \n\n ## 권한 ## \n\n 관리자만 가능",
         parameters=[
         OpenApiParameter(
             name        = 'img_delete',

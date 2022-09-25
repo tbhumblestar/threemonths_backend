@@ -1,13 +1,13 @@
 # Project : Threemonths
 
-### 프로젝트 개요
-- 실제 베이커리 뜨리먼뜨(Threemonths)의 웹 사이트 구현
+### 개요
+- 실제 베이커리인 뜨리먼뜨(Threemonths)의 웹 사이트 구현
 - 사이트 : http://threemonths.net/
 
 <br/>
 
 ### 프로젝트 멤버 및 역할
-- 멤버 :  김영빈(Back) & 이현정(Front) &  장형원(Front)
+- 멤버 : 김영빈(Back) & 이현정(Front) &  장형원(Front)
 - 맡은 역할 : Backend 전담
 
 <br/>
