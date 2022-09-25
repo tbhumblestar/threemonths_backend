@@ -4,7 +4,6 @@ from products.models import *
 
 #Product
 admin.site.register(Product)
-admin.site.register(Ingredient)
 admin.site.register(ProductImage)
 
 #IndependentImage

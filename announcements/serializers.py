@@ -1,5 +1,6 @@
 from rest_framework       import serializers
 from announcements.models import FAQ, QnA, QnAComment,Notice
+from drf_spectacular.utils      import extend_schema_field
 
 
 
@@ -29,7 +30,7 @@ class QnASerializer(serializers.ModelSerializer):
     class Meta:
         model  = QnA
         fields = ['id','title','content','qna_comments','created_at','user_nickname']
-        
+    
     def get_user_nickname(self,object):
         return object.user.nickname
     

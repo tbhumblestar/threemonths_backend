@@ -30,7 +30,7 @@ class S3Handler():
     def __init__(self):
         self.client = boto3.client('s3',aws_access_key_id=secret_settings.AWS_ACCESS_KEY_ID,aws_secret_access_key=secret_settings.AWS_SECRET_ACCESS_KEY)
         
-    def upload(self,file,Key,field_name='img',content_type='image/jpeg'):
+    def upload(self,file,Key,field_name='img',content_type='image/jpeg') -> dict[str,str]:
 
         
         #https://stackoverflow.com/questions/72208629/share-jpeg-file-stored-on-s3-via-url-instead-of-downloading
@@ -44,7 +44,7 @@ class S3Handler():
         
         return res_dict
     
-    def delete(self,Key):
+    def delete(self,Key) -> None:
         self.client.delete_object(Bucket=secret_settings.AWS_STORAGE_BUCKET_NAME,Key=Key)
 
     

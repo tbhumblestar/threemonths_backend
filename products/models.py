@@ -25,31 +25,15 @@ class Product(models.Model):
         db_table = 'products'
 
 
-class Ingredient(models.Model):
-    
-    product = models.ForeignKey("Product",on_delete=models.CASCADE)
-    name    = models.CharField(max_length=50)
-    origin  = models.CharField(max_length=50)
-    
-    class Meta:
-        db_table = 'ingredients'
-
-
 class ProductImage(models.Model):
     
-    page_category =(
-        ('main','main'),
-        ('detail','detail')
-    )
-    
     product     = models.ForeignKey("Product",on_delete=models.CASCADE,related_name='product_images')
-    img_src     = models.CharField(max_length=500)
-    page        = models.CharField(max_length=50)
-    place       = models.CharField(max_length=50)
-    description = models.CharField(max_length=100,null=True,blank=True)
+    img_url     = models.CharField(max_length=500)
+    s3_path     = models.CharField(max_length=500)
+    property    = models.CharField(max_length=100)
     
     def __str__(self):
-        return f"{self.page} page | {self.product.product_name}"
+        return f"{self.property} page | {self.product.product_name}"
     
     class Meta:
         db_table = 'product_images'
