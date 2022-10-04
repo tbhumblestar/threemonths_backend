@@ -150,6 +150,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+
 }
 
 
@@ -173,6 +174,7 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'ThreeMonth API',
     'DESCRIPTION': 'ThreeMonths Project(http://threemonths.net/)의 API에 관한 Swagger입니다 !!',
     'VERSION': '2차배포',
+    'COMPONENT_SPLIT_REQUEST': True,
     'SERVE_INCLUDE_SCHEMA': False,
     # OTHER SETTINGS
     'SWAGGER_UI_SETTINGS': {

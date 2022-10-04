@@ -22,7 +22,18 @@ class IndependentImageListView(generics.ListAPIView):
 
 @extend_schema_view(
     post = extend_schema(
-        description='## 설명 ## \n\n 상품 생성 \n\n 어드민 페이지에서 사용 \n\n <br/> \n\n ## 권한 ## \n\n 관리자만 가능'
+        description='## 설명 ## \n\n 상품 생성 \n\n 어드민 페이지에서 사용 \n\n <br/> \n\n ## 권한 ## \n\n 관리자만 가능',
+        request=inline_serializer('product_create',{
+            "product_name"         : serializers.CharField(),
+            "category"             : serializers.CharField(),
+            "price"                : serializers.IntegerField(),
+            "description"          : serializers.CharField(),
+            "optional_description" : serializers.CharField(),
+            "is_active"            : serializers.BooleanField(),
+            'main'                 : serializers.FileField(),
+            'detail1'              : serializers.FileField(),
+            'detail2'              : serializers.FileField(),
+})
     ),
     get = extend_schema(
     description='## 설명 ## \n\n 상품 List 조회 \n\n <br/> \n\n ## 권한 ## \n\n 누구나(비회원도) 가능',
@@ -156,10 +167,10 @@ class ProductView(generics.ListCreateAPIView):
             type        = OpenApiTypes.STR,
             location    = OpenApiParameter.QUERY,
             required    = False,
-            description = "해당 Notice의 이미지를 삭제할때 사용. [detail]라는 값을 보내줄 경우 해당 리뷰의 detail이 삭제되는 방식. []라는 값을 보낼 경우 아무기능도 하지 않음 ",
+            description = "해당 상품의 이미지를 삭제할때 사용. [detail]라는 값을 보내줄 경우 해당 리뷰의 detail이 삭제되는 방식. []라는 값을 보낼 경우 아무기능도 하지 않음 ",
             examples    = [OpenApiExample(
                 name           = 'img_delete',
-                value          = 'ex) [main] , [], [main,detail2]',
+                value          = 'ex) [main] , [], [main,detail2], [detail1,detail2]',
                 parameter_only = OpenApiParameter.QUERY,
                 description    = "[detail]와 같이 대괄호가 필수. 정해진 속성값외의 값이 대괄호 안에 들어올 경우 에러남"
                 )]
