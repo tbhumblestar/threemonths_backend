@@ -151,3 +151,33 @@ class KaKaoLogOutView(APIView):
         
         except KeyError:
             return Response({'message':'KEY_ERROR'},status=status.HTTP_400_BAD_REQUEST)
+        
+
+class SMSAuth(APIView):
+    """
+    폰번호를 받고, 문자인증을 실행
+    """
+    def post(self,request):
+        pass
+
+class CheckSMSAuth(APIView):
+    """
+    유저아이디, 폰번호, 문자인증 입력값을 받아 문자인증 일치여부 확인
+    """
+    def post(self,request):
+        pass
+
+class CheckEmailAndContact(APIView):
+    """
+    Email과 번호를 받고, 이에 일치하는 유저가 있는지 확인
+    """
+    def post(self,request):
+        pass
+    
+class SetnewPW(APIView):
+    """
+    유저pk와 새 비밀번호를 받음
+    비밀번호를 해시함수에 적용하여(set_password)저장
+    """
+    def post(self,request):
+        pass
