@@ -1,8 +1,13 @@
-import functools, time, datetime
 from django.db   import connection, reset_queries
 from django.conf import settings
-import boto3
+import functools, time, datetime, boto3, requests, hashlib, hmac, base64
+
 import secret_settings
+
+from threemonths.settings            import (NAVER_SMS_SERVICE_ID,NAVER_ACCESS_KEY_ID,NAVER_SECRET_KEY,call_number)
+
+
+
 
 def query_debugger(func):
     @functools.wraps(func)
@@ -47,4 +52,70 @@ class S3Handler():
     def delete(self,Key) -> None:
         self.client.delete_object(Bucket=secret_settings.AWS_STORAGE_BUCKET_NAME,Key=Key)
 
+
+
+
+
+def make_signature(access_key, secret_key, method, uri, timestmap):
+    """
+    네이버 클라우드api에서 사용할 시그니처를 생성
+    """
+    timestamp = str(int(time.time() * 1000))
+    secret_key = bytes(secret_key, 'UTF-8')
+    message = method + " " + uri + "\n" + timestamp + "\n" + access_key
+    message = bytes(message, 'UTF-8')
+    signingKey = base64.b64encode(hmac.new(secret_key, message, digestmod=hashlib.sha256).digest())
+    return signingKey
+
+
+def send_sms(phone_number : str,message : str):
+    """
+    문자롤 보낼 번호와 보낼 메세지를 넣어주면, 미리 등록된 발신번호로 문자가 발송됨
+    """
+    sms_uri              = f"/sms/v2/services/{NAVER_SMS_SERVICE_ID}/messages"
+    sms_url              = f"https://sens.apigw.ntruss.com{sms_uri}"
+    sms_access_key       = NAVER_ACCESS_KEY_ID
+    sms_secret_key       = NAVER_SECRET_KEY
+    sms_type             = "SMS"
+    sms_from_countryCode = 82 
+    sms_call_number      = call_number
+
+
+    # uri
+    uri = sms_uri
+    #  URL
+    url = sms_url
+    # access key , secrek_key
+    access_key = sms_access_key
+    secret_key = sms_secret_key
     
+    #헤더에 사용할 timestamp
+    timestamp = str(int(time.time() * 1000))
+    
+    #헤더에 사용할 key
+    #url이 아니라 uri를 넣어준다!
+    key = make_signature(access_key, secret_key, 'POST', uri, timestamp)
+    
+    headers = {
+    'Content-Type'            : 'application/json; charset=utf-8',
+    'x-ncp-apigw-timestamp'   : timestamp,
+    'x-ncp-iam-access-key'    : access_key,
+    'x-ncp-apigw-signature-v2': key
+    }
+    
+    body = {
+            "type"        : sms_type,
+            "contentType" : "COMM",
+            "countryCode" : sms_from_countryCode,
+            "from"        : call_number,
+            "content"     : message,
+            "messages"    :
+                [{
+                    "to"      : phone_number,
+                    "content" : message,
+                }]
+            }
+    
+    
+    res = requests.post(url, json=body, headers=headers)
+    return res.json()

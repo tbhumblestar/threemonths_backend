@@ -11,8 +11,8 @@ from drf_spectacular.utils           import (extend_schema,
                                             inline_serializer,
                                             OpenApiTypes
 )
-
-import requests
+from core.cores                      import send_sms
+import requests, time
 
 
 User = get_user_model()
@@ -153,12 +153,27 @@ class KaKaoLogOutView(APIView):
             return Response({'message':'KEY_ERROR'},status=status.HTTP_400_BAD_REQUEST)
         
 
+#시그니쳐생성함수(가이드 : https://api.ncloud-docs.com/docs/common-ncpapi )
+#포털(#https://www.ncloud.com/mypage/manage/authkey)에서 받는 인증키와 시크릿키로 만들 수 있음
+
 class SMSAuth(APIView):
     """
     폰번호를 받고, 문자인증을 실행
     """
-    def post(self,request):
-        pass
+    def post(self,request,*args,**kwargs):
+        
+        try:
+            phone_number = request.data['phone_number']
+            message      = request.data['message']
+        except KeyError:
+            return Response({'message':'KEY_ERROR'},status=status.HTTP_400_BAD_REQUEST)
+        
+        res = send_sms(phone_number=phone_number,subject='test',message=message)
+        print(res)
+        
+        
+        return Response(res,status=status.HTTP_201_CREATED)
+
 
 class CheckSMSAuth(APIView):
     """
