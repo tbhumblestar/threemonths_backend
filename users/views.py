@@ -12,7 +12,7 @@ from drf_spectacular.utils           import (extend_schema,
                                             OpenApiTypes
 )
 from core.cores                      import send_sms
-import requests, time
+import requests, random
 
 
 User = get_user_model()
@@ -164,15 +164,20 @@ class SMSAuth(APIView):
         
         try:
             phone_number = request.data['phone_number']
-            message      = request.data['message']
         except KeyError:
             return Response({'message':'KEY_ERROR'},status=status.HTTP_400_BAD_REQUEST)
         
-        res = send_sms(phone_number=phone_number,subject='test',message=message)
+        
+        check_num = str(random.randint(10000,99999))
+        message  = f'Threemonths 홈페이지 인증번호는 {check_num} 입니다'
+        res       = send_sms(phone_number=phone_number,message=message)
         print(res)
         
         
         return Response(res,status=status.HTTP_201_CREATED)
+
+
+
 
 
 class CheckSMSAuth(APIView):

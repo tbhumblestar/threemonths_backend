@@ -80,7 +80,7 @@ def send_sms(phone_number : str,message : str):
     sms_from_countryCode = 82 
     sms_call_number      = call_number
 
-
+    print(message)
     # uri
     uri = sms_uri
     #  URL

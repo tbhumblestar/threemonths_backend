@@ -68,3 +68,17 @@ class User(AbstractBaseUser,PermissionsMixin,TimeStampedModel):
     
     class Meta:
         db_table = 'users'
+        
+        
+        
+class SMSAuth(TimeStampedModel):
+    
+    sms_check_char = models.CharField(max_length=30)
+    user           = models.OneToOneField(User,on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.sms_check_char}"
+    
+    class Meta:
+        db_table = 'sms_auth'
+        
