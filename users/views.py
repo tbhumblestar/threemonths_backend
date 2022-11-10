@@ -11,9 +11,9 @@ from drf_spectacular.utils           import (extend_schema,
                                             inline_serializer,
                                             OpenApiTypes
 )
-from core.cores                      import send_sms
+from core.cores import send_sms
+from .models    import SMSAuth
 import requests, random
-
 
 User = get_user_model()
 
@@ -153,10 +153,7 @@ class KaKaoLogOutView(APIView):
             return Response({'message':'KEY_ERROR'},status=status.HTTP_400_BAD_REQUEST)
         
 
-#시그니쳐생성함수(가이드 : https://api.ncloud-docs.com/docs/common-ncpapi )
-#포털(#https://www.ncloud.com/mypage/manage/authkey)에서 받는 인증키와 시크릿키로 만들 수 있음
-
-class SMSAuth(APIView):
+class RunSMSAuth(APIView):
     """
     폰번호를 받고, 문자인증을 실행
     """
@@ -168,16 +165,24 @@ class SMSAuth(APIView):
             return Response({'message':'KEY_ERROR'},status=status.HTTP_400_BAD_REQUEST)
         
         
-        check_num = str(random.randint(10000,99999))
-        message  = f'Threemonths 홈페이지 인증번호는 {check_num} 입니다'
-        res       = send_sms(phone_number=phone_number,message=message)
-        print(res)
+        ### fix
+        # 추가할 것 : 문자인증 안됐을 때 DB에 저장되지 않게 할 것
+        # 추가할 것 : 해당 번호로 인증이 있다면, 새로만들어서 저장
+        # 추가할 것 : 테스트코드(mock)
         
+        check_num = str(random.randint(10000,99999))
+        message   = f'Threemonths 홈페이지 인증번호는 [{check_num}] 입니다'
+        res       = send_sms(phone_number=phone_number,message=message)
+        
+        #202일때만 성공
+        if res.get('statusCode') != "202":
+            return Response({'message':'NAVER_CLOUD_ERROR'},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        #혹시 기존에 동일한 번호로 인증데이터가 남아있다면 전부 삭제하고, 새로 객체를 만들어 저장
+        SMSAuth.objects.filter(phone_number = phone_number).delete()
+        SMSAuth.objects.create(phone_number=phone_number,sms_check_char=check_num)
         
         return Response(res,status=status.HTTP_201_CREATED)
-
-
-
 
 
 class CheckSMSAuth(APIView):

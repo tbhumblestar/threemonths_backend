@@ -74,7 +74,7 @@ class User(AbstractBaseUser,PermissionsMixin,TimeStampedModel):
 class SMSAuth(TimeStampedModel):
     
     sms_check_char = models.CharField(max_length=30)
-    user           = models.OneToOneField(User,on_delete=models.CASCADE)
+    phone_number   = models.CharField(max_length=100)
 
     def __str__(self):
         return f"{self.sms_check_char}"

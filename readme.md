@@ -32,7 +32,8 @@
 
 ### 기능
 - AbstactBaseUser기반의 커스텀 유저모델
-- 카카오톡 소셜로그인 / 네이버 클라우드를 활용한 문자인증
+- 카카오톡 소셜로그인
+- 네이버 클라우드를 활용한 문자인증
 - SIMPLE-JWT와 DRF Permission기능을 활용한 인증, 인가
 - DRF의 genericview기반의 api구현
 - to_representation 등을 활용한 serializer customizing
