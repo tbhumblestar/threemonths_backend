@@ -73,8 +73,10 @@ class User(AbstractBaseUser,PermissionsMixin,TimeStampedModel):
         
 class SMSAuth(TimeStampedModel):
     
-    sms_check_char = models.CharField(max_length=30)
-    phone_number   = models.CharField(max_length=100)
+    sms_check_num = models.CharField(max_length=30)
+    
+    #번호 인덱스 추가해야 함
+    phone_number   = models.CharField(max_length=100,db_index=True)
 
     def __str__(self):
         return f"{self.sms_check_char}"

@@ -7,8 +7,6 @@ import secret_settings
 from threemonths.settings            import (NAVER_SMS_SERVICE_ID,NAVER_ACCESS_KEY_ID,NAVER_SECRET_KEY,call_number)
 
 
-
-
 def query_debugger(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -29,15 +27,12 @@ def query_debugger(func):
     return wrapper
 
 
-
-
 class S3Handler():
     def __init__(self):
         self.client = boto3.client('s3',aws_access_key_id=secret_settings.AWS_ACCESS_KEY_ID,aws_secret_access_key=secret_settings.AWS_SECRET_ACCESS_KEY)
         
     def upload(self,file,Key,field_name='img',content_type='image/jpeg') -> dict[str,str]:
 
-        
         #https://stackoverflow.com/questions/72208629/share-jpeg-file-stored-on-s3-via-url-instead-of-downloading
         # 'content-type' : 'multipart/form-data'
         self.client.upload_fileobj(file,secret_settings.AWS_STORAGE_BUCKET_NAME,Key,ExtraArgs={'ContentType':content_type})
@@ -51,9 +46,6 @@ class S3Handler():
     
     def delete(self,Key) -> None:
         self.client.delete_object(Bucket=secret_settings.AWS_STORAGE_BUCKET_NAME,Key=Key)
-
-
-
 
 
 def make_signature(access_key, secret_key, method, uri, timestmap):
@@ -115,7 +107,6 @@ def send_sms(phone_number : str,message : str):
                     "content" : message,
                 }]
             }
-    
     
     res = requests.post(url, json=body, headers=headers)
     return res.json()
