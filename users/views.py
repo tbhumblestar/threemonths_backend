@@ -13,6 +13,8 @@ from drf_spectacular.utils           import (extend_schema,
 )
 from core.cores import send_sms
 from .models    import SMSAuth
+
+from datetime   import datetime,timedelta
 import requests, random
 
 User = get_user_model()
@@ -166,15 +168,13 @@ class RunSMSAuth(APIView):
         
         
         ### fix
-        # 추가할 것 : 문자인증 안됐을 때 DB에 저장되지 않게 할 것
-        # 추가할 것 : 해당 번호로 인증이 있다면, 새로만들어서 저장
         # 추가할 것 : 테스트코드(mock)
         
-        sms_check_num = str(random.randint(10000,99999))
-        message       = f'Threemonths 홈페이지 인증번호는 [{sms_check_num}] 입니다'
-        res           = send_sms(phone_number=phone_number,message=message)
+        sms_check_num =  str(random.randint(10000,99999))
+        message       =  f'Threemonths 홈페이지 인증번호는 [{sms_check_num}] 입니다'
+        res           =  send_sms(phone_number=phone_number,message=message)
         
-        #202일때만 성공
+        #NaverCloud는 202일때만 성공
         if res.get('statusCode') != "202":
             return Response({'message':'NAVER_CLOUD_ERROR'},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -183,25 +183,8 @@ class RunSMSAuth(APIView):
         SMSAuth.objects.filter(phone_number = phone_number).delete()
         SMSAuth.objects.create(phone_number=phone_number,sms_check_num=sms_check_num)
         
-        return Response(res,status=status.HTTP_201_CREATED)
+        return Response(sms_check_num,status=status.HTTP_201_CREATED)
 
-
-class CheckSMSAuth(APIView):
-    """
-    폰번호, 문자인증 입력값을 받아 문자인증 일치여부 확인
-    """
-    def post(self,request):
-        
-        try:
-            phone_number  = request.data['phone_number']
-            sms_check_num = request.data['sms_check_num']
-        except KeyError:
-            return Response({'message':'KEY_ERROR'},status=status.HTTP_400_BAD_REQUEST)
-        
-        if SMSAuth.objects.filter(phone_number=phone_number,sms_check_num=sms_check_num):
-            SMSAuth.objects.get(phone_number=phone_number,sms_check_num=sms_check_num).delete()
-            return Response(status.HTTP_200_OK)
-        return Response(status.HTTP_401_UNAUTHORIZED)
 
 class CheckEmailAndContact(APIView):
     """

@@ -79,7 +79,7 @@ class SMSAuth(TimeStampedModel):
     phone_number   = models.CharField(max_length=100,db_index=True)
 
     def __str__(self):
-        return f"{self.sms_check_char}"
+        return f"{self.phone_number}:{self.sms_check_num}"
     
     class Meta:
         db_table = 'sms_auth'
