@@ -12,7 +12,6 @@ from drf_spectacular.utils           import (extend_schema,
                                             OpenApiTypes
 )
 from core.cores import send_sms
-from .models    import SMSAuth
 
 from datetime   import datetime,timedelta
 import requests, random
@@ -180,8 +179,6 @@ class RunSMSAuth(APIView):
 
         #혹시 기존에 동일한 번호로 인증데이터가 남아있다면 전부 삭제하고, 새로 객체를 만들어 저장
         #번호 인덱스 추가해야 함
-        SMSAuth.objects.filter(phone_number = phone_number).delete()
-        SMSAuth.objects.create(phone_number=phone_number,sms_check_num=sms_check_num)
         
         return Response(sms_check_num,status=status.HTTP_201_CREATED)
 
