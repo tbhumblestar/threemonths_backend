@@ -5,6 +5,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response         import Response
 from rest_framework.views            import APIView
 from django.contrib.auth             import get_user_model
+from django.core.exceptions          import ObjectDoesNotExist
 from drf_spectacular.utils           import (extend_schema,
                                             OpenApiParameter,
                                             OpenApiExample,
@@ -12,6 +13,7 @@ from drf_spectacular.utils           import (extend_schema,
                                             OpenApiTypes
 )
 from core.cores import send_sms
+
 
 from datetime   import datetime,timedelta
 import requests, random
@@ -177,9 +179,6 @@ class RunSMSAuth(APIView):
         if res.get('statusCode') != "202":
             return Response({'message':'NAVER_CLOUD_ERROR'},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        #혹시 기존에 동일한 번호로 인증데이터가 남아있다면 전부 삭제하고, 새로 객체를 만들어 저장
-        #번호 인덱스 추가해야 함
-        
         return Response(sms_check_num,status=status.HTTP_201_CREATED)
 
 
@@ -188,12 +187,34 @@ class CheckEmailAndContact(APIView):
     Email과 번호를 받고, 이에 일치하는 유저가 있는지 확인
     """
     def post(self,request):
-        pass
+        try:
+            phone_number = request.data['phone_number']
+            email        = request.data['email']
+        except KeyError:
+            return Response({'message':'KEY_ERROR'},status=status.HTTP_400_BAD_REQUEST)
+        
+        if User.objects.filter(email = email,phone_number=phone_number):
+            user = User.objects.get(email=email,phone_number=phone_number)
+            return Response({user.id},status=status.HTTP_200_OK)
+        
+        return Response({'message':'NO_USER'},status=status.HTTP_400_BAD_REQUEST)
+        
     
-class SetnewPW(APIView):
+class SetNewPW(APIView):
     """
     유저pk와 새 비밀번호를 받음
-    비밀번호를 해시함수에 적용하여(set_password)저장
+    비밀번호를 해시함수에 적용하여 저장
     """
     def post(self,request):
-        pass
+        try:
+            user_id = request.data['user_id']
+            new_pw  = request.data['new_pw']
+            
+            user = User.objects.get(id=user_id)
+            user.set_password(new_pw)
+        except KeyError:
+            return Response({'message':'KEY_ERROR'},status=status.HTTP_400_BAD_REQUEST)
+        except ObjectDoesNotExist:
+            return Response({'message':'NO_USER'},status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response(status=status.HTTP_200_OK)

@@ -1,6 +1,5 @@
 from django.urls import path
-from .views import KaKaoLoginView,KaKaoLogOutView,RunSMSAuth
-from rest_framework_simplejwt.views import TokenVerifyView
+from .views import KaKaoLoginView,KaKaoLogOutView,RunSMSAuth, CheckEmailAndContact, SetNewPW
 
 
 urlpatterns = [
@@ -8,4 +7,6 @@ urlpatterns = [
     path('kakaologin',KaKaoLoginView.as_view(),name='kakaologin'),
     path('kakaologout',KaKaoLogOutView.as_view(),name='kakaologout'),
     path('smsauth',RunSMSAuth.as_view(),name='runsmsauth'),
+    path('checkemailandcontact',CheckEmailAndContact.as_view(),name='runsmsauth'),
+    path('setnewpw',SetNewPW.as_view(),name='setnewpw'),
 ]
