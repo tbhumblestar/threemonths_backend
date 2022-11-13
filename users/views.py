@@ -154,9 +154,46 @@ class KaKaoLogOutView(APIView):
         
         except KeyError:
             return Response({'message':'KEY_ERROR'},status=status.HTTP_400_BAD_REQUEST)
-        
 
-class RunSMSAuth(APIView):
+
+class SiteSignUpView(APIView):
+    """
+    서비스 자체 회원가입
+    """
+    
+    #checkpoint
+    #nickname과 username이 있는데, 어느 부분을 받을지?
+    #email을 unique속성으로 놔뒀었는데, logintype이 다르면 어떻게 할지??
+    
+    def post(self, request, *args, **kwargs):
+        try:
+            
+            create_data = {
+                'username'     : request.data['name'],
+                'nickname'     : request.data['name'],
+                'email'        : request.data['email'],
+                'contact_num'  : request.data['phone_number'],
+                'password'     : request.data['password'],
+                'login_type'   : 'SiteLogin'
+            }
+            
+        except KeyError:
+            return Response({'message':'KEY_ERROR'},status=status.HTTP_400_BAD_REQUEST)
+        
+        #이메일 존재하는지 검증
+        if User.objects.filter(email=create_data['email'],login_type='SiteLogin'):
+            return Response({'message':'ALREADY_EXIST_EMAIL'},status=status.HTTP_400_BAD_REQUEST)
+        
+        #회워가입
+        user = User.objects.create_user(**create_data)
+        print(user)
+
+        return Response(status=status.HTTP_201_CREATED)
+    
+    
+    
+
+class RunSMSAuthView(APIView):
     """
     폰번호를 받고, 해당 번호로 5자리의 문자인증을 실행
     """
@@ -182,7 +219,7 @@ class RunSMSAuth(APIView):
         return Response(sms_check_num,status=status.HTTP_201_CREATED)
 
 
-class CheckEmailAndContact(APIView):
+class CheckEmailAndContactView(APIView):
     """
     Email과 번호를 받고, 이에 일치하는 유저가 있는지 확인
     """
@@ -200,7 +237,7 @@ class CheckEmailAndContact(APIView):
         return Response({'message':'NO_USER'},status=status.HTTP_400_BAD_REQUEST)
         
     
-class SetNewPW(APIView):
+class SetNewPWView(APIView):
     """
     유저pk와 새 비밀번호를 받음
     비밀번호를 해시함수에 적용하여 저장
