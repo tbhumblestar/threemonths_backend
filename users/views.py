@@ -184,13 +184,10 @@ class SiteSignUpView(APIView):
         if User.objects.filter(email=create_data['email'],login_type='SiteLogin'):
             return Response({'message':'ALREADY_EXIST_EMAIL'},status=status.HTTP_400_BAD_REQUEST)
         
-        #회워가입
+        #회원가입
         user = User.objects.create_user(**create_data)
-        print(user)
 
         return Response(status=status.HTTP_201_CREATED)
-    
-    
     
 
 class RunSMSAuthView(APIView):
@@ -204,7 +201,6 @@ class RunSMSAuthView(APIView):
         except KeyError:
             return Response({'message':'KEY_ERROR'},status=status.HTTP_400_BAD_REQUEST)
         
-        
         ### fix
         # 추가할 것 : 테스트코드(mock)
         
@@ -217,6 +213,27 @@ class RunSMSAuthView(APIView):
             return Response({'message':'NAVER_CLOUD_ERROR'},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response(sms_check_num,status=status.HTTP_201_CREATED)
+
+
+class GetEmailByContactView(APIView):
+    """
+    아이디 찾기 과정에서 사용되는 View
+    문자인증에 성공했을 경우, 번호를 받아서 해당 번호로 검색되는 email이 있는지 확인
+    #fix : phone_number가 여러 개 일 수도 잇음.. 이 부분 모델에서 체크해야 함
+    """
+    def post(self,request):
+        try:
+            phone_number = request.data['phone_number']
+            email        = request.data['email']
+        except KeyError:
+            return Response({'message':'KEY_ERROR'},status=status.HTTP_400_BAD_REQUEST)
+        
+        #fix : phone_number가 여러 개 일 수도 잇음.. 이 부분 모델에서 체크해야 함
+        if User.objects.filter(phone_number=phone_number):
+            user = User.objects.get(phone_number=phone_number)
+            return Response({user.id},status=status.HTTP_200_OK)
+        
+        return Response({'message':'NO_USER'},status=status.HTTP_400_BAD_REQUEST)
 
 
 class CheckEmailAndContactView(APIView):
@@ -236,7 +253,8 @@ class CheckEmailAndContactView(APIView):
         
         return Response({'message':'NO_USER'},status=status.HTTP_400_BAD_REQUEST)
         
-    
+
+
 class SetNewPWView(APIView):
     """
     유저pk와 새 비밀번호를 받음
