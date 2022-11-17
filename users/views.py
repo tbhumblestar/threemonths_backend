@@ -169,7 +169,6 @@ class SiteSignUpView(APIView):
         try:
             
             create_data = {
-                'username'     : request.data['name'],
                 'nickname'     : request.data['name'],
                 'email'        : request.data['email'],
                 'contact_num'  : request.data['phone_number'],
