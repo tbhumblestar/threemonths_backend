@@ -62,8 +62,8 @@ class KaKaoLoginView(APIView):
             response_only = True,
             status_codes  = [200],
             value = {
-                "nickname" : "김영빈",
-                "email"    : "colock123@gmail.com",
+                "nickname" : "tester",
+                "email"    : "test@gmail.com",
                 "id"       : 1,
                 "jwt"      : {
                     "refresh": "eyJ0eX......lCCSW1g",
@@ -72,11 +72,12 @@ class KaKaoLoginView(APIView):
 },
         )
     ],
-    responses={200 : inline_serializer('user',{
-        "nickname" : serializers.CharField(),
-        "email"    : serializers.EmailField(),
-        "id"       : serializers.IntegerField(),
-        "jwt"      : inline_serializer(
+    responses={200    : inline_serializer('user',{
+        "nickname"    : serializers.CharField(),
+        "email"       : serializers.EmailField(),
+        "id"          : serializers.IntegerField(),
+        "contact_num" : serializers.CharField(),
+        "jwt"         : inline_serializer(
             'jwt',
             fields = {
                 'refresh' : serializers.CharField(),
@@ -98,9 +99,15 @@ class KaKaoLoginView(APIView):
                 return Response({"message":response.json().get('msg')},status = status.HTTP_400_BAD_REQUEST)
             response          = response.json()
             
-            email             = response.get('kakao_account').get('email',None)
+            email             = response.get('kakao_account').get('email')
             if not email:
                 return Response({"message":"Don't have Email information"},status=status.HTTP_400_BAD_REQUEST)
+            
+            contact_num       = response.get('kakao_account').get('phone_number')
+            if not email:
+                return Response({"message":"Don't have contact_num information"},status=status.HTTP_400_BAD_REQUEST)
+
+            contact_num = '0' + contact_num[4:]
             
             kakao_id          = response.get('id')
             nickname          = response.get('properties').get('nickname')
@@ -113,6 +120,7 @@ class KaKaoLoginView(APIView):
                     "profile_image_url": profile_image_url,
                     "email"            : email,
                     "login_type"       : "KakaoLogin",
+                    'contact_num'      : contact_num,
                 }
             )
             
@@ -169,7 +177,7 @@ class SiteSignUpView(APIView):
         try:
             
             create_data = {
-                'nickname'     : request.data['name'],
+                'nickname'     : request.data['nickname'],
                 'email'        : request.data['email'],
                 'contact_num'  : request.data['phone_number'],
                 'password'     : request.data['password'],
@@ -180,8 +188,12 @@ class SiteSignUpView(APIView):
             return Response({'message':'KEY_ERROR'},status=status.HTTP_400_BAD_REQUEST)
         
         #이메일 존재하는지 검증
-        if User.objects.filter(email=create_data['email'],login_type='SiteLogin'):
+        if User.objects.filter(email=create_data['email']):
             return Response({'message':'ALREADY_EXIST_EMAIL'},status=status.HTTP_400_BAD_REQUEST)
+        
+        #
+        if User.objects.filter(contact_num=create_data['contact_num']):
+            return Response({'message':'ALREADY_EXIST_CONTACT_NUM'},status=status.HTTP_400_BAD_REQUEST)
         
         #회원가입
         user = User.objects.create_user(**create_data)
