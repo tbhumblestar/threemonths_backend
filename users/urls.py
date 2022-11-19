@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import KaKaoLoginView,KaKaoLogOutView,RunSMSAuthView, CheckEmailAndContactView, SetNewPWView, SiteSignUpView
+from .views import KaKaoLoginView,KaKaoLogOutView,RunSMSAuthView, CheckEmailAndContactNumView, GetEmailByContactNumView, SetNewPWView, SiteSignUpView
 
 
 urlpatterns = [
@@ -7,7 +7,8 @@ urlpatterns = [
     path('kakaologin',KaKaoLoginView.as_view(),name='kakaologin'),
     path('kakaologout',KaKaoLogOutView.as_view(),name='kakaologout'),
     path('smsauth',RunSMSAuthView.as_view(),name='runsmsauth'),
-    path('checkemailandcontact',CheckEmailAndContactView.as_view(),name='runsmsauth'),
+    path('checkemailandcontactnum',CheckEmailAndContactNumView.as_view(),name='checkemailandcontactnum'),
+    path('getemailbycontactnumview',GetEmailByContactNumView.as_view(),name='getemailbycontactnumview'),
     path('setnewpw',SetNewPWView.as_view(),name='setnewpw'),
     path('sitesignup',SiteSignUpView.as_view(),name='sitesignup'),
 ]

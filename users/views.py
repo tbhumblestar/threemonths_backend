@@ -226,7 +226,7 @@ class RunSMSAuthView(APIView):
         return Response(sms_check_num,status=status.HTTP_201_CREATED)
 
 
-class GetEmailByContactView(APIView):
+class GetEmailByContactNumView(APIView):
     """
     아이디 찾기 과정에서 사용되는 View
     문자인증에 성공했을 경우, 번호를 받아서 해당 번호로 검색되는 email이 있는지 확인
@@ -234,32 +234,31 @@ class GetEmailByContactView(APIView):
     """
     def post(self,request):
         try:
-            phone_number = request.data['phone_number']
-            email        = request.data['email']
+            contact_num = request.data['phone_number']
         except KeyError:
             return Response({'message':'KEY_ERROR'},status=status.HTTP_400_BAD_REQUEST)
         
-        #fix : phone_number가 여러 개 일 수도 잇음.. 이 부분 모델에서 체크해야 함
-        if User.objects.filter(phone_number=phone_number):
-            user = User.objects.get(phone_number=phone_number)
-            return Response({user.id},status=status.HTTP_200_OK)
+        #fix : contact_num 여러 개 일 수도 잇음.. 이 부분 모델에서 체크해야 함
+        if User.objects.filter(contact_num=contact_num):
+            user = User.objects.get(contact_num=contact_num)
+            return Response({'email':user.email},status=status.HTTP_200_OK)
         
         return Response({'message':'NO_USER'},status=status.HTTP_400_BAD_REQUEST)
 
 
-class CheckEmailAndContactView(APIView):
+class CheckEmailAndContactNumView(APIView):
     """
     Email과 번호를 받고, 이에 일치하는 유저가 있는지 확인
     """
     def post(self,request):
         try:
-            phone_number = request.data['phone_number']
+            contact_num = request.data['phone_number']
             email        = request.data['email']
         except KeyError:
             return Response({'message':'KEY_ERROR'},status=status.HTTP_400_BAD_REQUEST)
         
-        if User.objects.filter(email = email,phone_number=phone_number):
-            user = User.objects.get(email=email,phone_number=phone_number)
+        if User.objects.filter(email = email,contact_num=contact_num):
+            user = User.objects.get(email=email,contact_num=contact_num)
             return Response({user.id},status=status.HTTP_200_OK)
         
         return Response({'message':'NO_USER'},status=status.HTTP_400_BAD_REQUEST)
@@ -277,7 +276,9 @@ class SetNewPWView(APIView):
             new_pw  = request.data['new_pw']
             
             user = User.objects.get(id=user_id)
+            print(new_pw)
             user.set_password(new_pw)
+            user.save()
         except KeyError:
             return Response({'message':'KEY_ERROR'},status=status.HTTP_400_BAD_REQUEST)
         except ObjectDoesNotExist:
