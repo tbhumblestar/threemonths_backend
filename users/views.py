@@ -149,6 +149,7 @@ class KaKaoLoginView(APIView):
         
         
 class KaKaoLogOutView(APIView):
+    
     def post(self,request):
                 
         try:
@@ -165,14 +166,24 @@ class KaKaoLogOutView(APIView):
 
 
 class SiteSignUpView(APIView):
-    """
-    서비스 자체 회원가입
-    """
-    
-    #checkpoint
-    #nickname과 username이 있는데, 어느 부분을 받을지?
-    #email을 unique속성으로 놔뒀었는데, logintype이 다르면 어떻게 할지??
-    
+
+    @extend_schema(
+    description='서비스 자체 회원가입',
+    examples=[
+        OpenApiExample(
+            name          = "POST body example",
+            description   = "이메일과 전화번호가 중복되지 않을 경우 ",
+            request_only  = True,
+            status_codes  = [200],
+            value = {
+                "nickname"    : "tester",
+                "email"       : "test@gmail.com",
+                "contact_num" : 1,
+                "password"    : 'abcd1234'
+    }
+        )
+    ],
+)
     def post(self, request, *args, **kwargs):
         try:
             
@@ -191,7 +202,7 @@ class SiteSignUpView(APIView):
         if User.objects.filter(email=create_data['email']):
             return Response({'message':'ALREADY_EXIST_EMAIL'},status=status.HTTP_400_BAD_REQUEST)
         
-        #
+        #전화번호
         if User.objects.filter(contact_num=create_data['contact_num']):
             return Response({'message':'ALREADY_EXIST_CONTACT_NUM'},status=status.HTTP_400_BAD_REQUEST)
         

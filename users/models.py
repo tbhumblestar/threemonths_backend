@@ -70,6 +70,17 @@ class User(AbstractBaseUser,PermissionsMixin,TimeStampedModel):
         db_table = 'users'
         
         
-        
+class SMSAuth(TimeStampedModel):
+
+    sms_check_num = models.CharField(max_length=30)
+    
+    #번호 인덱스 추가해야 함
+    contact_num   = models.CharField(max_length=100,db_index=True)
+
+    def __str__(self):
+        return f"{self.contact_num}:{self.sms_check_num}"
+
+    class Meta:
+        db_table = 'sms_auth'
 
         
