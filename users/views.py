@@ -128,6 +128,7 @@ class KaKaoLoginView(APIView):
             data['nickname'] = user.nickname
             data['email']    = user.email
             data['id']       = user.id
+            data['is_staff'] = user.is_staff
             
             #JWT
             refresh = RefreshToken.for_user(user)
