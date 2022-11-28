@@ -13,6 +13,7 @@ from drf_spectacular.utils           import (extend_schema,
                                             OpenApiTypes
 )
 from core.cores import send_sms
+from users.models import SMSAuth
 
 
 from datetime   import datetime,timedelta
@@ -234,9 +235,19 @@ class RunSMSAuthView(APIView):
         #NaverCloud는 202일때만 성공
         if res.get('statusCode') != "202":
             return Response({'message':'NAVER_CLOUD_ERROR'},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        #기존에 있던 인증코드삭제
+        if SMSAuth.objects.filter(contact_num=phone_number):
+            SMSAuth.objects.filter(contact_num=phone_number).delete()
+            
+        SMSAuth.objects.create(contact_num=phone_number,sms_check_num=sms_check_num)
 
         return Response(sms_check_num,status=status.HTTP_201_CREATED)
 
+
+
+            
+        
 
 class GetEmailByContactNumView(APIView):
     """
