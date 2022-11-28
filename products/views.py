@@ -87,8 +87,6 @@ class ProductView(generics.ListCreateAPIView):
         if img_filter:
             splited_img_filter = re.sub(",",":",img_filter).split(":") #자동으로 각 요소들이 str타입으로 리스트에  저장됨
             
-            print(splited_img_filter)
-            
             ## list to dict 방법1
             it = iter(re.sub(",",":",img_filter).split(":"))
             img_filter = dict(zip(it,it))

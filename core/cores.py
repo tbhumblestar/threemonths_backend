@@ -1,10 +1,14 @@
-from django.db   import connection, reset_queries
-from django.conf import settings
+from django.db           import connection, reset_queries
+from django.conf         import settings
+from django.contrib.auth import get_user_model
+from typing              import Union
 import functools, time, datetime, boto3, requests, hashlib, hmac, base64
-
 import secret_settings
 
 from threemonths.settings            import (NAVER_SMS_SERVICE_ID,NAVER_ACCESS_KEY_ID,NAVER_SECRET_KEY,call_number)
+
+
+User = get_user_model()
 
 
 def query_debugger(func):
@@ -28,6 +32,9 @@ def query_debugger(func):
 
 
 class S3Handler():
+    
+    
+    
     def __init__(self):
         self.client = boto3.client('s3',aws_access_key_id=secret_settings.AWS_ACCESS_KEY_ID,aws_secret_access_key=secret_settings.AWS_SECRET_ACCESS_KEY)
         
@@ -62,7 +69,8 @@ def make_signature(access_key, secret_key, method, uri, timestmap):
 
 def send_sms(phone_number : str,message : str):
     """
-    문자롤 보낼 번호와 보낼 메세지를 인자로 넣어주면, 미리 등록된 발신번호로 문자가 발송됨
+    문자롤 보낼 번호와 보낼 메세지를 인자로 넣어주면 \n
+    미리 등록된 발신번호로 문자가 발송됨
     """
     sms_uri              = f"/sms/v2/services/{NAVER_SMS_SERVICE_ID}/messages"
     sms_url              = f"https://sens.apigw.ntruss.com{sms_uri}"
@@ -110,3 +118,16 @@ def send_sms(phone_number : str,message : str):
     
     res = requests.post(url, json=body, headers=headers)
     return res.json()
+
+
+def checking_email_unique(email:str):
+    """
+    email(str)을 받아서 중복된 이메일이 있는지를 확인 \n
+    있다면, 로그인타입(KaKao | SiteLogin)을 반환 \n
+    없다면, None을 반환
+    """
+    if User.objects.filter(email=email):
+        user = user.objects.get(email=email)
+        return user.login_type
+    
+    return None
