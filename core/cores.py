@@ -127,7 +127,7 @@ def checking_email_unique(email:str):
     없다면, None을 반환
     """
     if User.objects.filter(email=email):
-        user = user.objects.get(email=email)
+        user = User.objects.get(email=email)
         return user.login_type
     
     return None

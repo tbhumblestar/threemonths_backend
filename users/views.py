@@ -10,7 +10,8 @@ from drf_spectacular.utils           import (extend_schema,
                                             OpenApiParameter,
                                             OpenApiExample,
                                             inline_serializer,
-                                            OpenApiTypes
+                                            OpenApiTypes,
+                                            OpenApiResponse
 )
 from core.cores import send_sms,checking_email_unique
 from users.models import SMSAuth
@@ -175,33 +176,44 @@ class KaKaoLogOutView(APIView):
 
 
 class SiteSignUpView(APIView):
-
     @extend_schema(
     description='서비스 자체 회원가입',
     examples=[
         OpenApiExample(
-            name          = "POST body example",
-            description   = "이메일과 전화번호가 중복되지 않을 경우 ",
-            request_only  = True,
-            status_codes  = [200],
+            name          = "요청",
+            description   = "전화번호, 이메일이 고유해야 하며, 아이디와 비밀번호도 양식에 맞아야 함",
+            request_only = True,
             value = {
                 "nickname"    : "tester",
                 "email"       : "test@gmail.com",
-                "contact_num" : 1,
-                "password"    : 'abcd1234'
-    }
+                "contact_num" : '010-0000-0000',
+                "password"    : "!test123!",
+                "login_type"  : "SiteLogin"
+    },
         )
     ],
-)
+    request=inline_serializer('sitesignup',{
+        "nickname"     : serializers.CharField(),
+        "email"        : serializers.CharField(),
+        "contact_num"  : serializers.CharField(),
+        "password"     : serializers.CharField(),
+        "login_type"   : serializers.CharField(),
+        },
+        ),
+    responses={
+        201: OpenApiResponse(description='사이트 회원가입 성공'),
+        400: OpenApiResponse(description='Body 데이터 키 에러 / 이메일 양식 틀림 / 비밀번호 양식 틀림'),
+        409: OpenApiResponse(description='이메일 또는 전화번호 중복'),
+        }
+    )
     def post(self, request, *args, **kwargs):
         try:
-            
             create_data = {
                 'nickname'     : request.data['nickname'],
                 'email'        : request.data['email'],
                 'contact_num'  : request.data['contact_num'],
                 'password'     : request.data['password'],
-                'login_type'   : 'SiteLogin'
+                'login_type'   : request.data['login_type'],
             }
             
         except KeyError:
@@ -217,7 +229,7 @@ class SiteSignUpView(APIView):
         
         #전화번호
         if User.objects.filter(contact_num=create_data['contact_num']):
-            return Response({'message':'Contact_num already exists'},status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message':'Contact_num already exists'},status=status.HTTP_409_CONFLICT)
         
         #회원가입
         user = User.objects.create_user(**create_data)
@@ -228,6 +240,28 @@ class RunSMSAuthView(APIView):
     """
     폰번호를 받고, 해당 번호로 5자리의 문자인증을 실행
     """
+    @extend_schema(
+    description='번호를 받고, 받은 번호로 문자인증을 수행',
+    examples=[
+        OpenApiExample(
+            name          = "요청",
+            description   = "받은 번호에 랜덤한 5자리 문자인증을 수행<br/><br/>반드시 000-0000-0000 형태로 전화번호를 받아야 함",
+            request_only = True,
+            value = {
+                "contact_num" : '010-0000-0000',
+    },
+        )
+    ],
+    request=inline_serializer('RunSMSAuth',{
+        "contact_num"  : serializers.CharField(),
+        },
+        ),
+    responses={
+        201: OpenApiResponse(description='문자인증번호 송신 성공'),
+        400: OpenApiResponse(description='Body 데이터 키 에러'),
+        500: OpenApiResponse(description='네이버 서버오류 / 예상치 못한 서버 오류'),
+        }
+    )
     def post(self,request,*args,**kwargs):
         
         try:
@@ -256,9 +290,31 @@ class RunSMSAuthView(APIView):
 
 
 class CheckSMSAuthView(APIView):
-    """
-    폰번호와 문자인증번호를 받아, 문자인증을 성공여부를 판별
-    """
+    @extend_schema(
+    description='폰번호와 문자인증번호를 받아, 문자인증을 성공여부를 판별',
+    examples=[
+        OpenApiExample(
+            name          = "요청",
+            description   = "번호(contact_num)는 문자형, 문자인증번호(sms_check_num)는 숫자형 <br/><br/> 문자인증에 성공한 문자인증번호는 바로 삭제됨(즉 동일한 인증번호를 다시 보낼 경우 실패함)",
+            request_only = True,
+            value = {
+                "contact_num" : '010-0000-0000',
+                "sms_check_num" : 36338,
+    },
+        )
+    ],
+    request=inline_serializer('CheckSMSAuth',{
+        "contact_num"  : serializers.CharField(),
+        "sms_check_num"  : serializers.IntegerField(),
+        },
+        ),
+    responses={
+        200: OpenApiResponse(description='문자인증 성공'),
+        204: OpenApiResponse(description='문자인증 실패(유저가 번호를 잘못입력'),
+        400: OpenApiResponse(description='Body 데이터 키 에러'),
+        500: OpenApiResponse(description='예상치 못한 서버 오류'),
+        }
+    )
     def post(self,request,*args,**kwargs):
         try:
             contact_num = request.data['contact_num']
@@ -280,7 +336,6 @@ class GetEmailByContactNumView(APIView):
     """
     아이디 찾기 과정에서 사용되는 View
     문자인증에 성공했을 경우, 번호를 받아서 해당 번호로 검색되는 email이 있는지 확인
-    #fix : phone_number가 여러 개 일 수도 잇음.. 이 부분 모델에서 체크해야 함
     """
     def post(self,request):
         try:
