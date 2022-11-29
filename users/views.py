@@ -310,7 +310,7 @@ class CheckSMSAuthView(APIView):
         ),
     responses={
         200: OpenApiResponse(description='문자인증 성공'),
-        204: OpenApiResponse(description='문자인증 실패(유저가 번호를 잘못입력'),
+        204: OpenApiResponse(description='문자인증 실패(휴대폰번호와 인증번호가 일치하지 않음)'),
         400: OpenApiResponse(description='Body 데이터 키 에러'),
         500: OpenApiResponse(description='예상치 못한 서버 오류'),
         }
@@ -333,10 +333,40 @@ class CheckSMSAuthView(APIView):
         
 
 class GetEmailByContactNumView(APIView):
-    """
-    아이디 찾기 과정에서 사용되는 View
-    문자인증에 성공했을 경우, 번호를 받아서 해당 번호로 검색되는 email이 있는지 확인
-    """
+    @extend_schema(
+    description='아이디 찾기에서 사용<br/><br/>문자인증에 성공하고나서 사용<br/><br/> 번호를 받아서 해당 번호로 검색되는 email이 있는지 확인',
+    examples=[
+        OpenApiExample(
+            name          = "요청",
+            description   = "번호(contact_num)는 문자형",
+            request_only = True,
+            value = {
+                "contact_num" : '010-0000-0000',
+    },
+        ),
+        OpenApiExample(
+            name          = "응답 : 성공(200)",
+            description   = "받은 번호로 등록된 이메일을 반환<br/><br/>앞의 두글자 이하로는 *로 표시",
+            response_only =  True,
+            value = {
+                "email" : 'te**@naver.com',
+    },
+        )
+    ],
+    request=inline_serializer('GetEmailByContactNum',{
+        "contact_num"  : serializers.CharField(),
+        },
+        ),
+    responses={
+        200: inline_serializer('GetEmailByContactNum',{
+        "email"  : serializers.CharField(),
+        },
+        ),
+        204: OpenApiResponse(description='해당 번호로 등록된 이메일이 없음'),
+        400: OpenApiResponse(description='Body 데이터 키 에러'),
+        500: OpenApiResponse(description='예상치 못한 서버 오류'),
+        }
+    )
     def post(self,request):
         try:
             contact_num = request.data['contact_num']
@@ -355,10 +385,42 @@ class GetEmailByContactNumView(APIView):
         return Response({'message':'NO_USER'},status=status.HTTP_204_NO_CONTENT)
 
 
-class CheckEmailAndContactNumView(APIView):
-    """
-    Email과 번호를 받고, 이에 일치하는 유저가 있는지 확인
-    """
+class MatchEmailAndContactNumView(APIView):
+    @extend_schema(
+    description='비밀번호 찾기에서 사용<br/><br/>이메일과 번호를 받고, 해당 이메일과 번호를 가진 유저가 있는지 확인',
+    examples=[
+        OpenApiExample(
+            name          = "요청",
+            description   = "번호(contact_num)는 문자형",
+            request_only = True,
+            value = {
+                "contact_num" : '010-0000-0000',
+                "email":"test@test.com"
+    },
+        ),
+        OpenApiExample(
+            name          = "요청성공(200)",
+            description   = "받은 번호와 이메일을 가진 유저의 id를 반환",
+            response_only =  True,
+            value = {
+                "user_id" : 75,
+    },
+        )
+    ],
+    request=inline_serializer('CheckEmailAndContactNum',{
+        "user_id"  : serializers.CharField(),
+        },
+        ),
+    responses={
+        200: inline_serializer('CheckEmailAndContactNum',{
+        "email"  : serializers.IntegerField(),
+        },
+        ),
+        204: OpenApiResponse(description='해당 번호와 이메일을 가진 유저가 없음'),
+        400: OpenApiResponse(description='Body 데이터 키 에러'),
+        500: OpenApiResponse(description='예상치 못한 서버 오류'),
+        }
+    )
     def post(self,request):
         try:
             contact_num = request.data['contact_num']
@@ -368,7 +430,7 @@ class CheckEmailAndContactNumView(APIView):
         
         if User.objects.filter(email = email,contact_num=contact_num):
             user = User.objects.get(email=email,contact_num=contact_num)
-            return Response({user.id},status=status.HTTP_200_OK)
+            return Response({"user_id" : user.id},status=status.HTTP_200_OK)
         
         return Response({'message':'NO_USER'},status=status.HTTP_204_NO_CONTENT)
         
@@ -379,13 +441,36 @@ class SetNewPWView(APIView):
     유저pk와 새 비밀번호를 받음
     비밀번호를 해시함수에 적용하여 저장
     """
+    @extend_schema(
+    description='유저pk와 새 비밀번호를 받음<br/><br/>비밀번호를 해시함수에 적용하여 저장',
+    examples=[
+        OpenApiExample(
+            name          = "요청",
+            description   = "번호(contact_num)는 문자형",
+            request_only = True,
+            value = {
+                "user_id" : 75,
+                "new_pw":"!abcd2345A!"
+    },
+        ),
+    ],
+    request=inline_serializer('SetNewPW',{
+        "user_id"  : serializers.CharField(),
+        "new_pw"  : serializers.CharField(),
+        },
+        ),
+    responses={
+        200: OpenApiResponse(description='비밀번호 변경 성공'),
+        400: OpenApiResponse(description='Body 데이터 키 에러 / 해당 id를 가진 유저가 존재하지 않음'),
+        500: OpenApiResponse(description='예상치 못한 서버 오류'),
+        }
+    )
     def post(self,request):
         try:
             user_id = request.data['user_id']
             new_pw  = request.data['new_pw']
             
             user = User.objects.get(id=user_id)
-            print(new_pw)
             user.set_password(new_pw)
             user.save()
         except KeyError:
