@@ -33,8 +33,6 @@ def query_debugger(func):
 
 class S3Handler():
     
-    
-    
     def __init__(self):
         self.client = boto3.client('s3',aws_access_key_id=secret_settings.AWS_ACCESS_KEY_ID,aws_secret_access_key=secret_settings.AWS_SECRET_ACCESS_KEY)
         
@@ -67,11 +65,14 @@ def make_signature(access_key, secret_key, method, uri, timestmap):
     return signingKey
 
 
-def send_sms(phone_number : str,message : str):
+def send_sms(phone_number:str,message:str):
     """
     문자롤 보낼 번호와 보낼 메세지를 인자로 넣어주면 \n
     미리 등록된 발신번호로 문자가 발송됨
     """
+    
+    phone_number = phone_number.replace('-','')
+    
     sms_uri              = f"/sms/v2/services/{NAVER_SMS_SERVICE_ID}/messages"
     sms_url              = f"https://sens.apigw.ntruss.com{sms_uri}"
     sms_access_key       = NAVER_ACCESS_KEY_ID
@@ -80,7 +81,6 @@ def send_sms(phone_number : str,message : str):
     sms_from_countryCode = 82 
     sms_call_number      = call_number
 
-    print(message)
     # uri
     uri = sms_uri
     #  URL

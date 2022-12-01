@@ -131,8 +131,6 @@ class ProductView(generics.ListCreateAPIView):
                 image_dict['s3_path']  = res_dict.__next__()
                 image_dict['img_url']  = res_dict.__next__()
                 
-                print("image_dict :",image_dict)
-                
                 image_datas.append(image_dict)
 
         serializer = self.get_serializer(data=request.data)
