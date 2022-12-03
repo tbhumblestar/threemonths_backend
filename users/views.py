@@ -190,7 +190,8 @@ class SiteSignUpView(APIView):
                 "password"    : "!test123!",
                 "login_type"  : "SiteLogin"
     },
-        )
+        ),
+        
     ],
     request=inline_serializer('sitesignup',{
         "nickname"     : serializers.CharField(),
@@ -234,7 +235,89 @@ class SiteSignUpView(APIView):
         #회원가입
         user = User.objects.create_user(**create_data)
         return Response(status=status.HTTP_201_CREATED)
+
+
+class SiteLoginView(APIView):
+    queryset = None
+    serializer_class = None
     
+    @extend_schema(
+    description='서비스 자체 로그인',
+    examples=[
+        OpenApiExample(
+            name          = "요청",
+            description   = "이메일과 비밀번호를 받음",
+            request_only = True,
+            value = {
+                "email"       : "test@gmail.com",
+                "password"    : "!test123!",
+                "login_type"  : "SiteLogin"
+    },
+        ),
+        OpenApiExample(
+            name          = "응답(201)",
+            description   = '사이트 로그인 성공, jwt토큰반환',
+            response_only = True,
+            status_codes  = [201],
+            value = {
+                "jwt"      : {
+                    "refresh": "eyJ0eX......lCCSW1g",
+                    "access": "eyJ0eX......g77rSqw"
+    }
+},
+        )
+    ],
+    request=inline_serializer('sitesignup',{
+        "email"        : serializers.CharField(),
+        "password"     : serializers.CharField(),
+        "login_type"   : serializers.CharField(),
+        },
+        ),
+    responses={
+        201 : inline_serializer(
+            'jwt',
+            fields = {
+                'refresh' : serializers.CharField(),
+                'access'  : serializers.CharField(),
+                }),
+        400: OpenApiResponse(description='Body 데이터 키 에러'),
+        401: OpenApiResponse(description='받은 정보와 일치하는 유저가 없음'),
+        500: OpenApiResponse(description='서버 측 에러')
+        }
+    )
+    def post(self,request,*args,**kwargs):
+        
+        try:
+            email = request.data['email']
+            password = request.data['password']
+            login_type = request.data['login_type']
+            
+        
+        except KeyError:
+            return Response({'message':'KEY_ERROR'},status=status.HTTP_400_BAD_REQUEST)
+        
+        if User.objects.filter(email=email):
+            user = User.objects.get(email=email)
+            
+            #로그인 타입이 다를 경우
+            if user.login_type != login_type:
+                return Response({"message":f"This email is registered as {user.login_type}."},status=status.HTTP_401_UNAUTHORIZED)
+            
+            #비밀번호가 틀릴 경우
+            if not user.check_password(password):
+                return Response({"message":"There are no users matching the information"},status=status.HTTP_401_UNAUTHORIZED)
+            
+            #JWT
+            refresh = RefreshToken.for_user(user)
+            jwt_token = {
+            'refresh' : str(refresh),
+            'access'  : str(refresh.access_token),
+        }
+            return Response(jwt_token,status=status.HTTP_201_CREATED)
+        
+        #이메일이 일치하는 경우가 없을 경우
+        return Response({"message":"There are no users matching the information"},status=status.HTTP_401_UNAUTHORIZED)
+            
 
 class RunSMSAuthView(APIView):
     """
