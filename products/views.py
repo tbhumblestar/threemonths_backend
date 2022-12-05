@@ -85,19 +85,21 @@ class ProductView(generics.ListCreateAPIView):
         #img_filter
         img_filter = self.request.query_params.get('img_filter')
         if img_filter:
+            # print(img_filter)
+            # print("hi!")
             splited_img_filter = re.sub(",",":",img_filter).split(":") #자동으로 각 요소들이 str타입으로 리스트에  저장됨
-            
+            # print(splited_img_filter)
             ## list to dict 방법1
             it = iter(re.sub(",",":",img_filter).split(":"))
             img_filter = dict(zip(it,it))
-            
+            # print(img_filter)
             ## list to dict 방법2
             # lst = splited_img_filter
             # img_filter = {
             #     lst[i] : lst[i+1] for i in range(0,len(lst),2)
             # }
             additional_context['img_filter'] = img_filter
-                
+            print(additional_context)
         #context_update
         context = super().get_serializer_context()
         context.update(additional_context)
