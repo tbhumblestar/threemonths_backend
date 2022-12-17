@@ -20,7 +20,9 @@ def query_debugger(func):
         result = func(*args, **kwargs)
         end    = time.perf_counter()
         number_of_end_queries = len(connection.queries)
+        
         #  - 1 if len(connection.queries) else 0
+        
         print(f"-------------------------------------------------------------------")
         print(f"start_time :{datetime.datetime.now()}")
         print(f"Function : {func.__name__}")
@@ -53,8 +55,9 @@ class S3Handler():
         self.client.delete_object(Bucket=secret_settings.AWS_STORAGE_BUCKET_NAME,Key=Key)
 
 
-def make_signature(access_key, secret_key, method, uri, timestmap):
+def make_signature(access_key, secret_key, method, uri):
     """
+    Author : YB in the threemonths
     네이버 클라우드api에서 사용할 시그니처를 생성
     """
     timestamp = str(int(time.time() * 1000))
@@ -97,10 +100,10 @@ def send_sms(phone_number:str,message:str):
     key = make_signature(access_key, secret_key, 'POST', uri, timestamp)
     
     headers = {
-    'Content-Type'            : 'application/json; charset=utf-8',
-    'x-ncp-apigw-timestamp'   : timestamp,
-    'x-ncp-iam-access-key'    : access_key,
-    'x-ncp-apigw-signature-v2': key
+    'Content-Type'             : 'application/json; charset=utf-8',
+    'x-ncp-apigw-timestamp'    : timestamp,
+    'x-ncp-iam-access-key'     : access_key,
+    'x-ncp-apigw-signature-v2' : key
     }
     
     body = {
@@ -115,7 +118,6 @@ def send_sms(phone_number:str,message:str):
                     "content" : message,
                 }]
             }
-    
     res = requests.post(url, json=body, headers=headers)
     return res.json()
 

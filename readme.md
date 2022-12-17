@@ -39,7 +39,8 @@
 - to_representation 등을 활용한 serializer customizing
 - select_related, prefetch_related, prefetch 등을 활용한 ORM 최적화
 - API testcode 구현
-
+- Redis를 활용한 캐싱기능(예정)
+- celery기반 비동기(예정)
 
 ### 배포
 - AWS의 EC2, RDS, S3 및 gunicorn을 사용
