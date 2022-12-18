@@ -74,11 +74,11 @@ class KaKaoLoginView(APIView):
 },
         )
     ],
-    responses={200    : inline_serializer('user',{
+    responses={201    : inline_serializer('user',{
         "nickname"    : serializers.CharField(),
         "email"       : serializers.EmailField(),
         "id"          : serializers.IntegerField(),
-        "is_staff"    : serializers.CharField(),
+        "is_staff"    : serializers.BooleanField(),
         "jwt"         : inline_serializer(
             'jwt',
             fields = {
@@ -260,6 +260,10 @@ class SiteLoginView(APIView):
             response_only = True,
             status_codes  = [201],
             value = {
+                "nickname"    : 'tester',
+                "email"       : 'tester@tester.com',
+                "id"          : '1',
+                "is_staff"    : 'False',
                 "jwt"      : {
                     "refresh": "eyJ0eX......lCCSW1g",
                     "access": "eyJ0eX......g77rSqw"
@@ -274,12 +278,17 @@ class SiteLoginView(APIView):
         },
         ),
     responses={
-        201 : inline_serializer(
+        201    : inline_serializer('user',{
+        "nickname"    : serializers.CharField(),
+        "email"       : serializers.EmailField(),
+        "id"          : serializers.IntegerField(),
+        "is_staff"    : serializers.BooleanField(),
+        "jwt"         : inline_serializer(
             'jwt',
             fields = {
                 'refresh' : serializers.CharField(),
                 'access'  : serializers.CharField(),
-                }),
+            }),}),
         400: OpenApiResponse(description='Body 데이터 키 에러'),
         401: OpenApiResponse(description='받은 정보와 일치하는 유저가 없음'),
         500: OpenApiResponse(description='서버 측 에러')
@@ -307,13 +316,19 @@ class SiteLoginView(APIView):
             if not user.check_password(password):
                 return Response({"message":"There are no users matching the information"},status=status.HTTP_401_UNAUTHORIZED)
             
+            data = {}
+            data['nickname'] = user.nickname
+            data['email']    = user.email
+            data['id']       = user.id
+            data['is_staff'] = user.is_staff
+            
             #JWT
             refresh = RefreshToken.for_user(user)
-            jwt_token = {
+            data['jwt'] = {
             'refresh' : str(refresh),
             'access'  : str(refresh.access_token),
-        }
-            return Response(jwt_token,status=status.HTTP_201_CREATED)
+        }   
+            return Response(data,status=status.HTTP_201_CREATED)
         
         #이메일이 일치하는 경우가 없을 경우
         return Response({"message":"There are no users matching the information"},status=status.HTTP_401_UNAUTHORIZED)
