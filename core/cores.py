@@ -52,12 +52,14 @@ class S3Handler():
         return res_dict
     
     def delete(self,Key) -> None:
+        """
+        받은 key값을 기준으로 S3에서 데이터삭제
+        """
         self.client.delete_object(Bucket=secret_settings.AWS_STORAGE_BUCKET_NAME,Key=Key)
 
 
 def make_signature(access_key, secret_key, method, uri):
     """
-    Author : YB in the threemonths
     네이버 클라우드api에서 사용할 시그니처를 생성
     """
     timestamp = str(int(time.time() * 1000))

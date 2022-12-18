@@ -78,7 +78,7 @@ class KaKaoLoginView(APIView):
         "nickname"    : serializers.CharField(),
         "email"       : serializers.EmailField(),
         "id"          : serializers.IntegerField(),
-        "contact_num" : serializers.CharField(),
+        "is_staff"    : serializers.CharField(),
         "jwt"         : inline_serializer(
             'jwt',
             fields = {
