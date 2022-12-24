@@ -182,7 +182,8 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def delete_not_used_order_field(self, res):
         """Delete not used order field in result"""
-        type_set = Order.ORDER_TYPE_SET
+        type_set = Order.ORDER_TYPE_SET.copy()
+        
         type_set.remove(res["type"])
         for order_type in type_set:
             res.pop(f"{order_type}orders")
