@@ -156,8 +156,8 @@ class OrderView(generics.ListCreateAPIView):
 
         #for test
         # send_sms('010-6691-9923',f"{serializer.data['type']}주문이 신청되었습니다. 어드민 페이지를 확인해주세요!")
-        # send_sms('010-6899-2635',f"{serializer.data['type']}주문이 신청되었습니다. 어드민 페이지를 확인해주세요!")
-        # send_sms('010-3480-9633',f"{serializer.data['type']}주문이 신청되었습니다. 어드민 페이지를 확인해주세요!")
+        send_sms('010-6899-2635',f"{serializer.data['type']}주문이 신청되었습니다. 어드민 페이지를 확인해주세요!")
+        send_sms('010-3480-9633',f"{serializer.data['type']}주문이 신청되었습니다. 어드민 페이지를 확인해주세요!")
         
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
