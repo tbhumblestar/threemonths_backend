@@ -35,7 +35,7 @@ from core.permissions import (
     IsAdminOrIsWriterOrReadOnly,
 )
 from core.schema import OrderSerializerSchema
-from core.cores import query_debugger, S3Handler
+from core.cores import query_debugger, S3Handler, send_sms
 from core.pagination import OrderListPagination
 
 import uuid
@@ -131,6 +131,8 @@ class OrderView(generics.ListCreateAPIView):
     filterset_class = OrderFilter
     pagination_class = OrderListPagination
 
+    
+
     # for pagination disable
     def paginate_queryset(self, queryset):
         """
@@ -148,21 +150,29 @@ class OrderView(generics.ListCreateAPIView):
 
         # want_fields
         additional_context = {}
-        want_fields = self.request.query_params.get("fields")
-        if want_fields:
-            additional_context["want_fields"] = tuple(want_fields.split(","))
+        # want_fields = self.request.query_params.get("fields")
+        # if want_fields:
+        #     additional_context["want_fields"] = tuple(want_fields.split(","))
+            
+        # additional_context2 =self.make_additonal_context()
 
         serializer = self.get_serializer(data=request.data, context=additional_context)
         serializer.is_valid(raise_exception=True)
-
-        detail_data = self.perform_create(serializer)
+        
+        self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
 
+        #for test
+        # send_sms('010-6691-9923',f"{serializer.data['type']}주문이 신청되었습니다. 어드민 페이지를 확인해주세요!")
+        send_sms('010-6899-2635',f"{serializer.data['type']}주문이 신청되었습니다. 어드민 페이지를 확인해주세요!")
+        send_sms('010-3480-9633',f"{serializer.data['type']}주문이 신청되었습니다. 어드민 페이지를 확인해주세요!")
+        
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
 
     def perform_create(self, serializer, **kwargs):
+        """Save Order Obj and Save Detail-Order Obj"""
         user = self.request.user
         created_order = serializer.save(user=self.request.user)
 
@@ -172,7 +182,16 @@ class OrderView(generics.ListCreateAPIView):
         detail_serializer.is_valid(raise_exception=True)
 
         detail_serializer.save(order=created_order)
-        return detail_serializer.data
+        
+    
+    def make_additonal_context(self):
+        """make additional context to pass serializer from query_parms"""
+        additional_context = {}
+        want_fields = self.request.query_params.get("fields")
+        if want_fields:
+            additional_context["want_fields"] = tuple(want_fields.split(","))
+    
+
 
 
 @extend_schema(methods=["PUT"], exclude=True)

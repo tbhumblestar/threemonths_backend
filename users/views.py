@@ -113,6 +113,7 @@ class KaKaoLoginView(APIView):
                 )
             response = response.json()
 
+
             # 카카오 서버로부터 이메일을 받지 못한 경우
             email = response.get("kakao_account").get("email")
             if not email:
@@ -123,7 +124,7 @@ class KaKaoLoginView(APIView):
 
             # 이메일이 이미 존재하는지를 확인. 존재할 경우 login_type을 반환. 존재하지 않을 경우 None
             email_login_type = checking_email_unique(email)
-            if email_login_type:
+            if email_login_type and email_login_type != 'KakaoLogin':
                 return Response(
                     {"message": "Email already exists", "login_type": email_login_type},
                     status=status.HTTP_409_CONFLICT,

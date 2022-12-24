@@ -119,7 +119,7 @@ def send_sms(phone_number: str, message: str):
 
     # 헤더에 사용할 key
     # url이 아니라 uri를 넣어준다!
-    key = make_signature(access_key, secret_key, "POST", uri, timestamp)
+    key = make_signature(access_key, secret_key, "POST", uri)
 
     headers = {
         "Content-Type": "application/json; charset=utf-8",
