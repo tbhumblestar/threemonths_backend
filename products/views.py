@@ -1,6 +1,7 @@
 import re, uuid
 
 from django.db               import transaction
+from django.db.models import Prefetch
 from rest_framework          import generics
 from rest_framework          import status
 from rest_framework.response import Response
@@ -68,38 +69,36 @@ class IndependentImageListView(generics.ListAPIView):
 ))
 class ProductView(generics.ListCreateAPIView):
     permission_classes = [IsAdminOrReadOnly]
-    queryset           = Product.objects.all().prefetch_related('product_images')
     serializer_class   = ProductSerializer
     filter_backends    = [filters.DjangoFilterBackend]
     filterset_class    = ProductFilter
     
-    def get_serializer_context(self):
+    @query_debugger
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+    
+    def get_queryset(self):
         
-        additional_context = {}
+        #img_filter
+        img_property_filter = {}
+        img_filter = self.request.query_params.get('img_filter')
+        if img_filter:
+            splited_img_filter = img_filter.split(',')
+            img_property_filter = {"property__in":splited_img_filter}
+        
+        queryset = Product.objects.all().prefetch_related(Prefetch('product_images',queryset=ProductImage.objects.filter(**img_property_filter)))
 
+        return queryset
+    
+    def get_serializer_context(self):
+        """update context from request.query_params and pass to serializer"""
+        
         # dyanamic field filtering
+        additional_context = {}
         want_fields     = self.request.query_params.get('fields')
         if want_fields:
             additional_context['want_fields'] = tuple(want_fields.split(','))
 
-        #img_filter
-        img_filter = self.request.query_params.get('img_filter')
-        if img_filter:
-            # print(img_filter)
-            # print("hi!")
-            splited_img_filter = re.sub(",",":",img_filter).split(":") #자동으로 각 요소들이 str타입으로 리스트에  저장됨
-            # print(splited_img_filter)
-            ## list to dict 방법1
-            it = iter(re.sub(",",":",img_filter).split(":"))
-            img_filter = dict(zip(it,it))
-            # print(img_filter)
-            ## list to dict 방법2
-            # lst = splited_img_filter
-            # img_filter = {
-            #     lst[i] : lst[i+1] for i in range(0,len(lst),2)
-            # }
-            additional_context['img_filter'] = img_filter
-            print(additional_context)
         #context_update
         context = super().get_serializer_context()
         context.update(additional_context)

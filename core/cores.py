@@ -68,18 +68,14 @@ class S3Handler:
         return res_dict
 
     def delete(self, Key) -> None:
-        """
-        받은 key값을 기준으로 S3에서 데이터삭제
-        """
+        """ 받은 key값을 기준으로 S3에서 데이터삭제 """
         self.client.delete_object(
             Bucket=secret_settings.AWS_STORAGE_BUCKET_NAME, Key=Key
         )
 
 
 def make_signature(access_key, secret_key, method, uri):
-    """
-    네이버 클라우드api에서 사용할 시그니처를 생성
-    """
+    """ 네이버 클라우드api에서 사용할 시그니처를 생성. """
     timestamp = str(int(time.time() * 1000))
     secret_key = bytes(secret_key, "UTF-8")
     message = method + " " + uri + "\n" + timestamp + "\n" + access_key
@@ -178,29 +174,3 @@ class UserInfoUniqueCheck():
             return user.login_type
 
         return True
-    
-
-# def checking_email_unique(email: str):
-#     """
-#     email(str)을 받아서, 받은 이메일을 가진 유저가 있는지를 확인 \n
-#     있다면, 로그인타입(KaKao | SiteLogin)을 반환 \n
-#     없다면, None을 반환
-#     """
-#     if User.objects.filter(email=email):
-#         user = User.objects.get(email=email)
-#         return user.login_type
-
-#     return None
-
-
-# def checking_contact_num_unique(contact_num: str):
-#     """
-#     email(str)을 받아서, 받은 전화번호를 가진 유저가 있는지를 확인 \n
-#     있다면, 로그인타입(KaKao | SiteLogin)을 반환 \n
-#     없다면, None을 반환
-#     """
-#     if User.objects.filter(contact_num=contact_num):
-#         user = User.objects.get(contact_num=contact_num)
-#         return user.login_type
-
-#     return None
