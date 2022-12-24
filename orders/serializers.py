@@ -186,7 +186,9 @@ class OrderSerializer(serializers.ModelSerializer):
         
         type_set.remove(res["type"])
         for order_type in type_set:
-            res.pop(f"{order_type}orders")
+            delete_field = f"{order_type}orders"
+            if res.get(delete_field):
+                res.pop(f"{order_type}orders")
 
         return res
 

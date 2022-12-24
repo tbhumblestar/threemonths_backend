@@ -14,7 +14,7 @@ from drf_spectacular.utils import (
     OpenApiTypes,
     OpenApiResponse,
 )
-from core.cores import send_sms, checking_email_unique
+from core.cores import send_sms, UserInfoUniqueCheck
 from users.models import SMSAuth
 
 
@@ -118,28 +118,33 @@ class KaKaoLoginView(APIView):
             email = response.get("kakao_account").get("email")
             if not email:
                 return Response(
-                    {"message": "Don't have Email information"},
+                    {"message": "Don't get Email information from kakao_server"},
                     status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            # 이메일이 이미 존재하는지를 확인. 존재할 경우 login_type을 반환. 존재하지 않을 경우 None
-            email_login_type = checking_email_unique(email)
-            if email_login_type and email_login_type != 'KakaoLogin':
-                return Response(
-                    {"message": "Email already exists", "login_type": email_login_type},
-                    status=status.HTTP_409_CONFLICT,
                 )
 
             # 카카오 서버로부터 전화번호를 받지 못한 경우
             contact_num = response.get("kakao_account").get("phone_number")
             if not email:
                 return Response(
-                    {"message": "Don't have contact_num information"},
+                    {"message": "Don't get contact_num information from "},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-
-            #
+            
+            #카카오로부터 받는 전화번호 formatting
             contact_num = "0" + contact_num[4:]
+            
+            user_info_is_unique = UserInfoUniqueCheck(email=email,contact_num=contact_num)
+            if user_info_is_unique.email != True and user_info_is_unique.email != 'KakaoLogin':
+                return Response(
+                    {"message": "Email already exists.", "login_type": user_info_is_unique.email},
+                    status=status.HTTP_409_CONFLICT,
+                )
+            
+            if user_info_is_unique.contact_num != True and user_info_is_unique.contact_num !='KakaoLogin':
+                return Response(
+                    {"message": "Contact_num already exists.", "login_type": user_info_is_unique.contact_num},
+                    status=status.HTTP_409_CONFLICT,
+                )
 
             kakao_id = response.get("id")
             nickname = response.get("properties").get("nickname")
@@ -163,6 +168,7 @@ class KaKaoLoginView(APIView):
             data["email"] = user.email
             data["id"] = user.id
             data["is_staff"] = user.is_staff
+            data["contact_num"] = user.contact_num
 
             # JWT
             refresh = RefreshToken.for_user(user)
@@ -173,8 +179,6 @@ class KaKaoLoginView(APIView):
             if created:
                 user.set_unusable_password()
                 user.save()  # save해주지 않으면 db에 저장되지 않음
-
-                return Response(data, status=status.HTTP_201_CREATED)
 
             return Response(data, status=status.HTTP_201_CREATED)
 
@@ -253,26 +257,24 @@ class SiteSignUpView(APIView):
                 {"message": "KEY_ERROR"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        # 이메일이 이미 존재하는지를 확인. 존재할 경우 login_type을 반환. 존재하지 않을 경우 None
-        email_login_type = checking_email_unique(request.data["email"])
-        if email_login_type:
-            return Response(
-                {"message": "Email already exists", "login_type": email_login_type},
-                status=status.HTTP_409_CONFLICT,
-            )
-
         if create_data["email"].count("@") >= 2:
             return Response(
                 {"message": "Wrong_type_Email"}, status=status.HTTP_400_BAD_REQUEST
             )
-
-        # 전화번호
-        if User.objects.filter(contact_num=create_data["contact_num"]):
+            
+        user_info_is_unique = UserInfoUniqueCheck(email=request.data['email'],contact_num=request.data['contact_num'])
+        if user_info_is_unique.email != True:
             return Response(
-                {"message": "Contact_num already exists"},
+                {"message": "Email already exists.", "login_type": user_info_is_unique.email},
                 status=status.HTTP_409_CONFLICT,
             )
-
+            
+        if user_info_is_unique.contact_num != True:
+            return Response(
+                {"message": "Contact_num already exists.", "login_type": user_info_is_unique.contact_num},
+                status=status.HTTP_409_CONFLICT,
+            )
+        
         # 회원가입
         user = User.objects.create_user(**create_data)
         return Response(status=status.HTTP_201_CREATED)
@@ -548,21 +550,26 @@ class GetEmailByContactNumView(APIView):
             return Response(
                 {"message": "KEY_ERROR"}, status=status.HTTP_400_BAD_REQUEST
             )
-        # fix : contact_num 여러 개 일 수도 잇음.. 이 부분 모델에서 체크해야 함
+
         if User.objects.filter(contact_num=contact_num):
             user = User.objects.get(contact_num=contact_num)
+            
+            masked_email = self.masking_email(user.email)
 
-            email_split = user.email.split("@")
-            email_first = (
-                email_split[0]
-                if len(email_split[0]) <= 2
-                else email_split[0][:2] + "*" * (len(email_split[0]) - 2)
-            )
-            email_last = email_split[1]
-            email = email_first + "@" + email_last
-
-            return Response({"email": email}, status=status.HTTP_200_OK)
+            return Response({"email": masked_email,"login_type" : user.login_type}, status=status.HTTP_200_OK)
         return Response({"message": "NO_USER"}, status=status.HTTP_204_NO_CONTENT)
+
+    def masking_email(self,email:str) -> str:
+        """Make email masked. Ex) abcde@naver.com >> ab***@naver.com """
+        email_split = email.split("@")
+        email_first = (
+            email_split[0]
+            if len(email_split[0]) <= 2
+            else email_split[0][:2] + "*" * (len(email_split[0]) - 2)
+        )
+        email_last = email_split[1]
+        maksed_email = email_first + "@" + email_last
+        return maksed_email
 
 
 class MatchEmailAndContactNumView(APIView):
@@ -602,6 +609,7 @@ class MatchEmailAndContactNumView(APIView):
             500: OpenApiResponse(description="예상치 못한 서버 오류"),
         },
     )
+    
     def post(self, request):
         try:
             contact_num = request.data["contact_num"]
@@ -619,10 +627,7 @@ class MatchEmailAndContactNumView(APIView):
 
 
 class SetNewPWView(APIView):
-    """
-    유저pk와 새 비밀번호를 받음
-    비밀번호를 해시함수에 적용하여 저장
-    """
+    """ 유저pk와 새 비밀번호를 받음. 비밀번호를 해시함수에 적용하여 저장 """
 
     @extend_schema(
         description="유저pk와 새 비밀번호를 받음<br/><br/>비밀번호를 해시함수에 적용하여 저장",

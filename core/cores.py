@@ -145,14 +145,62 @@ def send_sms(phone_number: str, message: str):
     return res.json()
 
 
-def checking_email_unique(email: str):
-    """
-    email(str)을 받아서 중복된 이메일이 있는지를 확인 \n
-    있다면, 로그인타입(KaKao | SiteLogin)을 반환 \n
-    없다면, None을 반환
-    """
-    if User.objects.filter(email=email):
-        user = User.objects.get(email=email)
-        return user.login_type
+class UserInfoUniqueCheck():
+    """Check user Info Unique"""
+    def __init__(self,email:str=None,contact_num:str=None) -> None:
 
-    return None
+        if email:
+            self.email = self.checking_email_unique(email)
+        if contact_num:
+            self.contact_num = self.checking_contact_num_unique(contact_num)
+            
+    def checking_email_unique(self,email: str):
+        """
+        email(str)을 받아서, 받은 이메일을 가진 유저가 있는지를 확인 \n
+        있다면, 로그인타입(KaKao | SiteLogin)을 반환 \n
+        없다면, None을 반환
+        """
+        
+        if User.objects.filter(email=email):
+            user = User.objects.get(email=email)
+            return user.login_type
+
+        return True
+    
+    def checking_contact_num_unique(self,contact_num: str):
+        """
+        contact_num(str)을 받아서, 받은 전화번호를 가진 유저가 있는지를 확인 \n
+        있다면, 로그인타입(KaKao | SiteLogin)을 반환 \n
+        없다면, None을 반환
+        """
+        if User.objects.filter(contact_num=contact_num):
+            user = User.objects.get(contact_num=contact_num)
+            return user.login_type
+
+        return True
+    
+
+# def checking_email_unique(email: str):
+#     """
+#     email(str)을 받아서, 받은 이메일을 가진 유저가 있는지를 확인 \n
+#     있다면, 로그인타입(KaKao | SiteLogin)을 반환 \n
+#     없다면, None을 반환
+#     """
+#     if User.objects.filter(email=email):
+#         user = User.objects.get(email=email)
+#         return user.login_type
+
+#     return None
+
+
+# def checking_contact_num_unique(contact_num: str):
+#     """
+#     email(str)을 받아서, 받은 전화번호를 가진 유저가 있는지를 확인 \n
+#     있다면, 로그인타입(KaKao | SiteLogin)을 반환 \n
+#     없다면, None을 반환
+#     """
+#     if User.objects.filter(contact_num=contact_num):
+#         user = User.objects.get(contact_num=contact_num)
+#         return user.login_type
+
+#     return None

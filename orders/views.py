@@ -131,8 +131,6 @@ class OrderView(generics.ListCreateAPIView):
     filterset_class = OrderFilter
     pagination_class = OrderListPagination
 
-    
-
     # for pagination disable
     def paginate_queryset(self, queryset):
         """
@@ -148,14 +146,8 @@ class OrderView(generics.ListCreateAPIView):
     @transaction.atomic
     def create(self, request, *args, **kwargs):
 
-        # want_fields
-        additional_context = {}
-        # want_fields = self.request.query_params.get("fields")
-        # if want_fields:
-        #     additional_context["want_fields"] = tuple(want_fields.split(","))
-            
-        # additional_context2 =self.make_additonal_context()
-
+        additional_context =self.make_additonal_context()
+        
         serializer = self.get_serializer(data=request.data, context=additional_context)
         serializer.is_valid(raise_exception=True)
         
@@ -164,8 +156,8 @@ class OrderView(generics.ListCreateAPIView):
 
         #for test
         # send_sms('010-6691-9923',f"{serializer.data['type']}주문이 신청되었습니다. 어드민 페이지를 확인해주세요!")
-        send_sms('010-6899-2635',f"{serializer.data['type']}주문이 신청되었습니다. 어드민 페이지를 확인해주세요!")
-        send_sms('010-3480-9633',f"{serializer.data['type']}주문이 신청되었습니다. 어드민 페이지를 확인해주세요!")
+        # send_sms('010-6899-2635',f"{serializer.data['type']}주문이 신청되었습니다. 어드민 페이지를 확인해주세요!")
+        # send_sms('010-3480-9633',f"{serializer.data['type']}주문이 신청되었습니다. 어드민 페이지를 확인해주세요!")
         
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
@@ -185,11 +177,13 @@ class OrderView(generics.ListCreateAPIView):
         
     
     def make_additonal_context(self):
-        """make additional context to pass serializer from query_parms"""
+        """make additional context to pass serializer from request.query_parms"""
         additional_context = {}
         want_fields = self.request.query_params.get("fields")
         if want_fields:
             additional_context["want_fields"] = tuple(want_fields.split(","))
+            
+        return additional_context
     
 
 
