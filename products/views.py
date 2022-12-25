@@ -73,10 +73,6 @@ class ProductView(generics.ListCreateAPIView):
     filter_backends    = [filters.DjangoFilterBackend]
     filterset_class    = ProductFilter
     
-    @query_debugger
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-    
     def get_queryset(self):
         
         #img_filter
