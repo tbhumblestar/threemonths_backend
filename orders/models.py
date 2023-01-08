@@ -11,7 +11,7 @@ class Order(TimeStampedModel):
     ORDER_TYPE = tuple((i, i + "_order") for i in ORDER_TYPE_SET)
 
     STATUS_TYPE_SET = set(["not_confirmed", "confirmed", "can't_cancel", "completed"])
-    STATUS_TYPE = tuple((i, i ) for i in STATUS_TYPE_SET)
+    STATUS_TYPE = tuple((i, i) for i in STATUS_TYPE_SET)
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=150)
