@@ -113,7 +113,6 @@ class KaKaoLoginView(APIView):
                 )
             response = response.json()
 
-
             # 카카오 서버로부터 이메일을 받지 못한 경우
             email = response.get("kakao_account").get("email")
             if not email:
@@ -129,20 +128,34 @@ class KaKaoLoginView(APIView):
                     {"message": "Don't get contact_num information from "},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            
-            #카카오로부터 받는 전화번호 formatting
+
+            # 카카오로부터 받는 전화번호 formatting
             contact_num = "0" + contact_num[4:]
-            
-            user_info_is_unique = UserInfoUniqueCheck(email=email,contact_num=contact_num)
-            if user_info_is_unique.email != True and user_info_is_unique.email != 'KakaoLogin':
+
+            user_info_is_unique = UserInfoUniqueCheck(
+                email=email, contact_num=contact_num
+            )
+            if (
+                user_info_is_unique.email != True
+                and user_info_is_unique.email != "KakaoLogin"
+            ):
                 return Response(
-                    {"message": "Email already exists.", "login_type": user_info_is_unique.email},
+                    {
+                        "message": "Email already exists.",
+                        "login_type": user_info_is_unique.email,
+                    },
                     status=status.HTTP_409_CONFLICT,
                 )
-            
-            if user_info_is_unique.contact_num != True and user_info_is_unique.contact_num !='KakaoLogin':
+
+            if (
+                user_info_is_unique.contact_num != True
+                and user_info_is_unique.contact_num != "KakaoLogin"
+            ):
                 return Response(
-                    {"message": "Contact_num already exists.", "login_type": user_info_is_unique.contact_num},
+                    {
+                        "message": "Contact_num already exists.",
+                        "login_type": user_info_is_unique.contact_num,
+                    },
                     status=status.HTTP_409_CONFLICT,
                 )
 
@@ -261,20 +274,28 @@ class SiteSignUpView(APIView):
             return Response(
                 {"message": "Wrong_type_Email"}, status=status.HTTP_400_BAD_REQUEST
             )
-            
-        user_info_is_unique = UserInfoUniqueCheck(email=request.data['email'],contact_num=request.data['contact_num'])
+
+        user_info_is_unique = UserInfoUniqueCheck(
+            email=request.data["email"], contact_num=request.data["contact_num"]
+        )
         if user_info_is_unique.email != True:
             return Response(
-                {"message": "Email already exists.", "login_type": user_info_is_unique.email},
+                {
+                    "message": "Email already exists.",
+                    "login_type": user_info_is_unique.email,
+                },
                 status=status.HTTP_409_CONFLICT,
             )
-            
+
         if user_info_is_unique.contact_num != True:
             return Response(
-                {"message": "Contact_num already exists.", "login_type": user_info_is_unique.contact_num},
+                {
+                    "message": "Contact_num already exists.",
+                    "login_type": user_info_is_unique.contact_num,
+                },
                 status=status.HTTP_409_CONFLICT,
             )
-        
+
         # 회원가입
         user = User.objects.create_user(**create_data)
         return Response(status=status.HTTP_201_CREATED)
@@ -553,14 +574,17 @@ class GetEmailByContactNumView(APIView):
 
         if User.objects.filter(contact_num=contact_num):
             user = User.objects.get(contact_num=contact_num)
-            
+
             masked_email = self.masking_email(user.email)
 
-            return Response({"email": masked_email,"login_type" : user.login_type}, status=status.HTTP_200_OK)
+            return Response(
+                {"email": masked_email, "login_type": user.login_type},
+                status=status.HTTP_200_OK,
+            )
         return Response({"message": "NO_USER"}, status=status.HTTP_204_NO_CONTENT)
 
-    def masking_email(self,email:str) -> str:
-        """Make email masked. Ex) abcde@naver.com >> ab***@naver.com """
+    def masking_email(self, email: str) -> str:
+        """Make email masked. Ex) abcde@naver.com >> ab***@naver.com"""
         email_split = email.split("@")
         email_first = (
             email_split[0]
@@ -609,7 +633,6 @@ class MatchEmailAndContactNumView(APIView):
             500: OpenApiResponse(description="예상치 못한 서버 오류"),
         },
     )
-    
     def post(self, request):
         try:
             contact_num = request.data["contact_num"]
@@ -627,7 +650,7 @@ class MatchEmailAndContactNumView(APIView):
 
 
 class SetNewPWView(APIView):
-    """ 유저pk와 새 비밀번호를 받음. 비밀번호를 해시함수에 적용하여 저장 """
+    """유저pk와 새 비밀번호를 받음. 비밀번호를 해시함수에 적용하여 저장"""
 
     @extend_schema(
         description="유저pk와 새 비밀번호를 받음<br/><br/>비밀번호를 해시함수에 적용하여 저장",
