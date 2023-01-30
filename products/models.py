@@ -1,4 +1,7 @@
 from django.db import models
+from django.db.models.signals import post_delete, post_save
+from django.dispatch import receiver
+from django.core.cache import cache
 
 
 class Product(models.Model):
@@ -23,6 +26,15 @@ class Product(models.Model):
 
     class Meta:
         db_table = 'products'
+
+@receiver(post_delete, sender=Product)
+def product_post_delete_handler(sender, **kwargs):
+    cache.delete('product_list_all_user')
+
+
+@receiver(post_save, sender=Product)
+def product_post_save_handler(sender, **kwargs):
+    cache.delete('product_list_all_user')
 
 
 class ProductImage(models.Model):

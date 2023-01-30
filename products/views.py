@@ -1,8 +1,9 @@
 import re, uuid
 
-from django.db               import transaction
+from django.db import transaction
 from django.db.models import Prefetch
-from rest_framework          import generics
+from rest_framework import generics
+from django.core.cache import cache
 from rest_framework          import status
 from rest_framework.response import Response
 from django_filters          import rest_framework as filters
@@ -82,7 +83,7 @@ class ProductView(generics.ListCreateAPIView):
             splited_img_filter = img_filter.split(',')
             img_property_filter = {"property__in":splited_img_filter}
         
-        queryset = Product.objects.all().prefetch_related(Prefetch('product_images',queryset=ProductImage.objects.filter(**img_property_filter)))
+        queryset = cache.get_or_set('product_list_all_user',Product.objects.all().prefetch_related(Prefetch('product_images',queryset=ProductImage.objects.filter(**img_property_filter))))
 
         return queryset
     
